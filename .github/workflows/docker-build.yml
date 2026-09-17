@@ -1,0 +1,235 @@
+name: VerifAI CI
+
+on:
+  push:
+
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-images:
+    name: Build ${{ matrix.service }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - web
+          - master-service
+          - resume-analyzer
+          - coding-analyzer
+          - marksheet-analyzer
+          - jd-analyzer
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build production image
+        run: |
+          docker build \
+            --file "${{ matrix.service }}/Dockerfile.prod" \
+            --tag "verifai-${{ matrix.service }}:ci" \
+            "${{ matrix.service }}"
+
+      - name: Start production container
+        run: |
+          container_port="8080"
+
+          if [ "${{ matrix.service }}" = "web" ]; then
+            container_port="3000"
+          fi
+
+          docker run \
+            --detach \
+            --name "verifai-${{ matrix.service }}-ci" \
+            --publish "8080:${container_port}" \
+            "verifai-${{ matrix.service }}:ci"
+
+      - name: Smoke test production container
+        run: |
+          endpoint="/health"
+
+          if [ "${{ matrix.service }}" = "web" ]; then
+            endpoint="/"
+          fi
+
+          for attempt in $(seq 1 30); do
+            if curl \
+              --fail \
+              --silent \
+              --location \
+              "http://127.0.0.1:8080${endpoint}" \
+              > /dev/null
+            then
+              echo "${{ matrix.service }} container is healthy"
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "${{ matrix.service }} failed its container smoke test"
+          docker logs "verifai-${{ matrix.service }}-ci"
+          exit 1
+
+      - name: Remove production container
+        if: always()
+        run: |
+          docker rm \
+            --force \
+            "verifai-${{ matrix.service }}-ci" \
+            2>/dev/null || true
+
+  test-python-services:
+    name: Test ${{ matrix.service }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - master-service
+          - resume-analyzer
+          - marksheet-analyzer
+          - jd-analyzer
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: ${{ matrix.service }}/requirements.txt
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.service }}
+        run: pip install -r requirements.txt
+
+      - name: Install resume language model
+        if: matrix.service == 'resume-analyzer'
+        working-directory: resume-analyzer
+        run: python -m spacy download en_core_web_sm
+
+      - name: Run unit tests
+        working-directory: ${{ matrix.service }}
+        run: python -m unittest discover -s tests -v
+
+  validate-frontend:
+    name: Validate frontend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint checks
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+  validate-migrations:
+    name: Validate database and runtime
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: verifai_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U postgres -d verifai_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/verifai_ci
+
+    defaults:
+      run:
+        working-directory: master-service
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: master-service/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Apply migrations
+        run: alembic upgrade head
+
+      - name: Check models and migrations are synchronized
+        run: alembic check
+
+      - name: Downgrade all migrations
+        run: alembic downgrade base
+
+      - name: Reapply all migrations
+        run: alembic upgrade head
+
+      - name: Display current revision
+        run: alembic current
+
+      - name: Smoke test master service
+        run: |
+          uvicorn app.main:app \
+            --host 127.0.0.1 \
+            --port 8080 \
+            > /tmp/master-service.log 2>&1 &
+
+          service_pid=$!
+          trap 'kill "$service_pid" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 30); do
+            if curl \
+              --fail \
+              --silent \
+              http://127.0.0.1:8080/health \
+              --output /tmp/health-response.json
+            then
+              python -c "import json; from pathlib import Path; response = json.loads(Path('/tmp/health-response.json').read_text()); assert response == {'status': 'ok'}, response; print('Master service health check passed:', response)"
+              exit 0
+            fi
+
+            if ! kill -0 "$service_pid" 2>/dev/null; then
+              break
+            fi
+
+            sleep 2
+          done
+
+          echo "Master service failed to become healthy"
+          cat /tmp/master-service.log
+          exit 1

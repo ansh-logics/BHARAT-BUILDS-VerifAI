@@ -1,0 +1,757 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
+
+import { clearTpoAuth } from "@/lib/auth-storage";
+import {
+  finalizeTpoRound,
+  getTpoMailJobProgress,
+  getTpoCurrentRound,
+  getApiErrorMessage,
+  listTpoGroups,
+  markStudentPlacement,
+  previewTpoRoundMails,
+  triggerTpoMailAction,
+  updateTpoRoundMemberStatus,
+} from "@/lib/api";
+import type {
+  TpoGroup,
+  TpoGroupMember,
+  TpoMailJobProgressResponse,
+  TpoMailType,
+  TpoRoundMailPreviewResponse,
+  TpoRoundState,
+} from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+
+export default function PlacementGroupDetailPage() {
+  const params = useParams<{ groupId: string }>();
+  const router = useRouter();
+  const [group, setGroup] = useState<TpoGroup | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [mailing, setMailing] = useState(false);
+  const [bulkMailJob, setBulkMailJob] = useState<TpoMailJobProgressResponse | null>(null);
+  const [bulkPolling, setBulkPolling] = useState(false);
+  const [placingStudentId, setPlacingStudentId] = useState<number | null>(null);
+  const [updatingRoundStudentId, setUpdatingRoundStudentId] = useState<number | null>(null);
+  const [finalizingRound, setFinalizingRound] = useState(false);
+  const [roundState, setRoundState] = useState<TpoRoundState | null>(null);
+  const [roundPreview, setRoundPreview] = useState<TpoRoundMailPreviewResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [mailType, setMailType] = useState<TpoMailType>("shortlist_notice");
+  const [customSubject, setCustomSubject] = useState("");
+  const [customBody, setCustomBody] = useState("");
+  const [additionalNote, setAdditionalNote] = useState("");
+  const [prepTopicsText, setPrepTopicsText] = useState("");
+  const [prepTopicsAutofilledForGroupId, setPrepTopicsAutofilledForGroupId] = useState<number | null>(null);
+  const [interviewDate, setInterviewDate] = useState("");
+  const [interviewStart, setInterviewStart] = useState("");
+  const [interviewEnd, setInterviewEnd] = useState("");
+  const [individualMailOpen, setIndividualMailOpen] = useState(false);
+  const [individualMailStudent, setIndividualMailStudent] = useState<TpoGroupMember | null>(null);
+  const [individualMailing, setIndividualMailing] = useState(false);
+  const [individualMailType, setIndividualMailType] = useState<TpoMailType>("shortlist_notice");
+  const [individualCustomSubject, setIndividualCustomSubject] = useState("");
+  const [individualCustomBody, setIndividualCustomBody] = useState("");
+  const [individualAdditionalNote, setIndividualAdditionalNote] = useState("");
+  const [individualPrepTopicsText, setIndividualPrepTopicsText] = useState("");
+  const [individualInterviewDate, setIndividualInterviewDate] = useState("");
+  const [individualInterviewStart, setIndividualInterviewStart] = useState("");
+  const [individualInterviewEnd, setIndividualInterviewEnd] = useState("");
+
+  const groupId = useMemo(() => Number(params.groupId), [params.groupId]);
+  const bulkStatusLabel = useMemo(() => {
+    if (!bulkMailJob) return "";
+    if (bulkMailJob.status === "queued") return "Queued";
+    if (bulkMailJob.status === "running") return "Sending";
+    if (bulkMailJob.status === "completed") return "Completed";
+    return bulkMailJob.failure_count > 0 ? "Completed with failures" : "Failed";
+  }, [bulkMailJob]);
+  const roundStatusMap = useMemo(() => {
+    const map = new Map<number, "pending" | "qualified" | "rejected">();
+    if (!roundState) return map;
+    for (const item of roundState.members) {
+      map.set(item.student_id, item.status);
+    }
+    return map;
+  }, [roundState]);
+  const visibleMembers = useMemo(() => {
+    if (!group) return [];
+    if (!roundState) return group.members;
+    const activeIds = new Set(roundState.members.map((m) => m.student_id));
+    return group.members.filter((member) => activeIds.has(member.student_id));
+  }, [group, roundState]);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!Number.isFinite(groupId)) {
+      setError("Invalid group id.");
+      setLoading(false);
+      return;
+    }
+    void listTpoGroups()
+      .then((groups) => {
+        if (!mounted) return;
+        const selected = groups.find((item) => item.id === groupId) || null;
+        if (!selected) {
+          setError("Group not found.");
+          setGroup(null);
+          return;
+        }
+        setGroup(selected);
+        return getTpoCurrentRound(selected.id);
+      })
+      .then((round) => {
+        if (!mounted || !round) return;
+        setRoundState(round);
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        if (axios.isAxiosError(err) && [401, 403].includes(err.response?.status ?? 0)) {
+          clearTpoAuth();
+          router.replace("/tpo/login");
+          return;
+        }
+        setError(getApiErrorMessage(err));
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [groupId, router]);
+
+  useEffect(() => {
+    setPrepTopicsAutofilledForGroupId(null);
+  }, [groupId]);
+
+  useEffect(() => {
+    if (!group || mailType !== "prep_topics") return;
+    if (prepTopicsAutofilledForGroupId === group.id) return;
+    if (prepTopicsText.trim()) return;
+    const topics = (group.jd_topics || []).map((topic) => topic.trim()).filter(Boolean);
+    if (!topics.length) return;
+    setPrepTopicsText(topics.join(", "));
+    setPrepTopicsAutofilledForGroupId(group.id);
+  }, [group, mailType, prepTopicsAutofilledForGroupId, prepTopicsText]);
+
+  const sendBulkMail = async () => {
+    if (!group) return;
+    setMailing(true);
+    try {
+      const result = await triggerTpoMailAction({
+        group_id: group.id,
+        mode: "bulk",
+        mail_type: mailType,
+        round_no: roundState?.round_no,
+        outcome: mailType === "round_result" ? "all" : undefined,
+        subject: customSubject || undefined,
+        body: customBody || undefined,
+        additional_note: additionalNote || undefined,
+        prep_topics: prepTopicsText
+          .split(",")
+          .map((topic) => topic.trim())
+          .filter(Boolean),
+        interview_date: interviewDate || undefined,
+        interview_time_start: interviewStart || undefined,
+        interview_time_end: interviewEnd || undefined,
+      });
+      if (typeof result.job_id !== "number") {
+        throw new Error("Bulk mail job could not be started.");
+      }
+      setBulkPolling(true);
+      setBulkMailJob({
+        job_id: result.job_id,
+        group_id: group.id,
+        mail_type: mailType,
+        status: result.status ?? "queued",
+        total_recipients: result.total_recipients ?? group.members.length,
+        processed_count: result.processed_count ?? 0,
+        success_count: result.success_count ?? 0,
+        failure_count: result.failure_count ?? 0,
+        progress_percent: 0,
+        last_error: null,
+        started_at: null,
+        finished_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+      toast.success(result.message);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setMailing(false);
+    }
+  };
+
+  const openIndividualMailComposer = (student: TpoGroupMember) => {
+    setIndividualMailStudent(student);
+    setIndividualMailType(mailType);
+    setIndividualCustomSubject(customSubject);
+    setIndividualCustomBody(customBody);
+    setIndividualAdditionalNote(additionalNote);
+    setIndividualPrepTopicsText(prepTopicsText);
+    setIndividualInterviewDate(interviewDate);
+    setIndividualInterviewStart(interviewStart);
+    setIndividualInterviewEnd(interviewEnd);
+    setIndividualMailOpen(true);
+  };
+
+  const closeIndividualMailComposer = () => {
+    if (individualMailing) return;
+    setIndividualMailOpen(false);
+    setIndividualMailStudent(null);
+  };
+
+  const sendIndividualMail = async () => {
+    if (!group || !individualMailStudent) return;
+    if (
+      individualMailType === "process_custom" &&
+      (!individualCustomSubject.trim() || !individualCustomBody.trim())
+    ) {
+      toast.error("Custom template requires both subject and body.");
+      return;
+    }
+    setIndividualMailing(true);
+    try {
+      const result = await triggerTpoMailAction({
+        group_id: group.id,
+        mode: "individual",
+        mail_type: individualMailType,
+        student_id: individualMailStudent.student_id,
+        round_no: roundState?.round_no,
+        subject: individualCustomSubject || undefined,
+        body: individualCustomBody || undefined,
+        additional_note: individualAdditionalNote || undefined,
+        prep_topics: individualPrepTopicsText
+          .split(",")
+          .map((topic) => topic.trim())
+          .filter(Boolean),
+        interview_date: individualInterviewDate || undefined,
+        interview_time_start: individualInterviewStart || undefined,
+        interview_time_end: individualInterviewEnd || undefined,
+      });
+      toast.success(result.message);
+      setIndividualMailOpen(false);
+      setIndividualMailStudent(null);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setIndividualMailing(false);
+    }
+  };
+
+  const updateRoundStatus = async (studentId: number, status: "pending" | "qualified" | "rejected") => {
+    if (!group || !roundState) return;
+    setUpdatingRoundStudentId(studentId);
+    try {
+      const updated = await updateTpoRoundMemberStatus(group.id, roundState.round_no, studentId, status);
+      setRoundState(updated);
+      const preview = await previewTpoRoundMails(group.id, roundState.round_no);
+      setRoundPreview(preview);
+      toast.success("Round status updated.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setUpdatingRoundStudentId(null);
+    }
+  };
+
+  const finalizeCurrentRound = async () => {
+    if (!group || !roundState) return;
+    setFinalizingRound(true);
+    try {
+      const finalized = await finalizeTpoRound(group.id, roundState.round_no, {
+        send_emails: false,
+      });
+      setRoundPreview(finalized);
+      const refreshedGroups = await listTpoGroups();
+      const selected = refreshedGroups.find((item) => item.id === group.id) || null;
+      setGroup(selected);
+      if (selected) {
+        const refreshedRound = await getTpoCurrentRound(selected.id);
+        setRoundState(refreshedRound);
+      }
+      toast.success("Round finalized.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setFinalizingRound(false);
+    }
+  };
+
+  const markPlaced = async (studentId: number) => {
+    setPlacingStudentId(studentId);
+    try {
+      await markStudentPlacement({
+        student_id: studentId,
+        group_id: group?.id,
+        pay_amount: null,
+        notes: `Marked from Placement Group #${groupId}`,
+      });
+      setGroup((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          members: prev.members.map((member) =>
+            member.student_id === studentId
+              ? {
+                ...member,
+                placement: {
+                  company_name: group?.company_name || "N/A",
+                  offer_type: (group?.role_type || "job") as "internship" | "job",
+                  pay_amount: null,
+                  notes: `Marked from Placement Group #${groupId}`,
+                  is_active: true,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                },
+              }
+              : member,
+          ),
+        };
+      });
+      toast.success("Student marked as placed.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err));
+    } finally {
+      setPlacingStudentId(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!bulkPolling || !bulkMailJob?.job_id) return;
+
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const progress = await getTpoMailJobProgress(bulkMailJob.job_id);
+        if (cancelled) return;
+        setBulkMailJob(progress);
+        if (progress.status === "completed" || progress.status === "failed") {
+          setBulkPolling(false);
+          if (progress.failure_count > 0) {
+            toast.warning(
+              `Bulk mail finished with ${progress.success_count} success and ${progress.failure_count} failure(s).`,
+            );
+          } else {
+            toast.success(`Bulk mail completed for ${progress.success_count} recipient(s).`);
+          }
+          return;
+        }
+        setTimeout(() => {
+          void poll();
+        }, 1000);
+      } catch (err) {
+        if (cancelled) return;
+        setBulkPolling(false);
+        toast.error(getApiErrorMessage(err));
+      }
+    };
+
+    void poll();
+    return () => {
+      cancelled = true;
+    };
+  }, [bulkPolling, bulkMailJob?.job_id]);
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-slate-500">
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+        Loading group details...
+      </div>
+    );
+  }
+
+  if (error || !group) {
+    return (
+      <div className="flex-1 p-8">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="py-6 text-red-700">{error || "Group not found."}</CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto p-8 rounded-[2rem] w-full h-full pb-10">
+      <div className="mx-auto w-full max-w-7xl space-y-8">
+        <div className="rounded-3xl border border-slate-200/60 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900">{group.title}</h1>
+              <p className="mt-1 text-sm text-slate-600">
+                Created by {group.created_by} on {new Date(group.created_at).toLocaleString()}
+              </p>
+              <p className="text-sm text-slate-600">
+                Company: <span className="font-medium">{group.company_name || "Not captured"}</span> · Role type:{" "}
+                <span className="font-medium">{group.role_type || "Not captured"}</span>
+              </p>
+              <p className="text-sm text-slate-600">
+                Pay/Stipend: <span className="font-medium">{group.pay_or_stipend || "Not captured"}</span> · Duration:{" "}
+                <span className="font-medium">{group.duration || "Not captured"}</span>
+              </p>
+              <p className="text-sm text-slate-600">
+                Bond: <span className="font-medium">{group.bond_details || "Not captured"}</span>
+              </p>
+            </div>
+            <div className="flex gap-2 self-start">
+              <Link href="/tpo/placement-groups">
+                <Button variant="outline" className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50">
+                  Back to groups
+                </Button>
+              </Link>
+              <Button
+                onClick={() => void sendBulkMail()}
+                disabled={mailing || bulkPolling}
+                className="h-9 rounded-full px-5 bg-blue-600 hover:bg-blue-700 text-white gap-2"
+              >
+                Bulk mail
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {bulkMailJob ? (
+          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+            <CardHeader className="pb-3 border-b border-slate-100">
+              <CardTitle className="text-base text-slate-900">Bulk Mail Progress</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between text-sm text-slate-600">
+                <span>Status: {bulkStatusLabel}</span>
+                <span>
+                  {bulkMailJob.processed_count}/{bulkMailJob.total_recipients} processed
+                </span>
+              </div>
+              <Progress value={bulkMailJob.progress_percent} className="h-2 bg-slate-200" />
+              <div className="grid grid-cols-3 gap-2 text-sm">
+                <p>Success: {bulkMailJob.success_count}</p>
+                <p>Failed: {bulkMailJob.failure_count}</p>
+                <p>Progress: {Math.round(bulkMailJob.progress_percent)}%</p>
+              </div>
+              {bulkMailJob.last_error ? (
+                <p className="text-xs text-red-600">Last error: {bulkMailJob.last_error}</p>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : null}
+
+        <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+          <CardHeader className="pb-3 border-b border-slate-100">
+            <CardTitle className="text-base text-slate-900">JD Summary</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-slate-700 whitespace-pre-wrap">
+            {group.jd_summary?.trim() || "No JD summary provided."}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+          <CardHeader className="pb-3 border-b border-slate-100">
+            <CardTitle className="text-base text-slate-900">Mail Composer</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              <select
+                value={mailType}
+                onChange={(e) => setMailType(e.target.value as TpoMailType)}
+                className="h-9 w-full rounded-full bg-slate-50 border border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              >
+                <option value="shortlist_notice">Shortlist notice</option>
+                <option value="prep_topics">Preparation topics</option>
+                <option value="interview_schedule">Interview schedule</option>
+                <option value="round_invite">Round invite</option>
+                <option value="round_result">Round result (qualified/rejected)</option>
+                <option value="process_custom">Custom process mail</option>
+              </select>
+              <Input
+                placeholder="Additional note (optional)"
+                value={additionalNote}
+                onChange={(e) => setAdditionalNote(e.target.value)}
+                className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+              />
+            </div>
+            {mailType === "prep_topics" ? (
+              <Input
+                placeholder="Prep topics (comma separated)"
+                value={prepTopicsText}
+                onChange={(e) => setPrepTopicsText(e.target.value)}
+                className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+              />
+            ) : null}
+            {mailType === "interview_schedule" ? (
+              <div className="grid gap-3 md:grid-cols-3">
+                <Input
+                  type="date"
+                  value={interviewDate}
+                  onChange={(e) => setInterviewDate(e.target.value)}
+                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                />
+                <Input
+                  type="time"
+                  value={interviewStart}
+                  onChange={(e) => setInterviewStart(e.target.value)}
+                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                />
+                <Input
+                  type="time"
+                  value={interviewEnd}
+                  onChange={(e) => setInterviewEnd(e.target.value)}
+                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                />
+              </div>
+            ) : null}
+            {mailType === "process_custom" ? (
+              <div className="space-y-2">
+                <Input
+                  placeholder="Custom subject"
+                  value={customSubject}
+                  onChange={(e) => setCustomSubject(e.target.value)}
+                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                />
+                <Textarea
+                  value={customBody}
+                  onChange={(e) => setCustomBody(e.target.value)}
+                  placeholder="Custom body (supports {student_name}, {company_name})"
+                  className="min-h-[100px] w-full rounded-2xl bg-slate-50 border-transparent hover:bg-slate-100 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400"
+                />
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        {roundState ? (
+          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+            <CardHeader className="pb-3 border-b border-slate-100">
+              <CardTitle className="text-base text-slate-900">
+                Round {roundState.round_no} of {roundState.total_rounds}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-slate-700">
+              <p>
+                Status: <span className="font-medium">{roundState.status}</span>
+              </p>
+              {roundPreview ? (
+                <p>
+                  Qualified: <span className="font-medium">{roundPreview.qualified_count}</span> · Rejected:{" "}
+                  <span className="font-medium">{roundPreview.rejected_count}</span>
+                </p>
+              ) : null}
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => void finalizeCurrentRound()}
+                  disabled={finalizingRound || roundState.status === "finalized"}
+                  className="h-9 rounded-full px-4 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {finalizingRound ? "Finalizing..." : "Finalize round"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    void sendBulkMail()
+                  }
+                  disabled={mailing || bulkPolling}
+                  className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50"
+                >
+                  Send selected mail
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+          <CardHeader className="pb-3 border-b border-slate-100">
+            <CardTitle className="text-base text-slate-900">Group Members ({visibleMembers.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Roll</TableHead>
+                  <TableHead>Branch</TableHead>
+                  <TableHead>Round Status</TableHead>
+                  <TableHead>Placement</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleMembers.map((member) => (
+                  <TableRow key={member.student_id}>
+                    <TableCell className="font-medium">{member.name}</TableCell>
+                    <TableCell>{member.email}</TableCell>
+                    <TableCell>{member.roll_no || "—"}</TableCell>
+                    <TableCell>{member.branch}</TableCell>
+                    <TableCell>{roundStatusMap.get(member.student_id) || "—"}</TableCell>
+                    <TableCell>
+                      {member.placement?.is_active
+                        ? `${member.placement.offer_type} @ ${member.placement.company_name}`
+                        : "Not placed"}
+                    </TableCell>
+                    <TableCell className="min-w-[240px] align-top">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openIndividualMailComposer(member)}
+                          disabled={mailing || bulkPolling || individualMailing}
+                          className="h-8 rounded-full px-3 border-slate-200 text-slate-700 hover:bg-slate-50"
+                        >
+                          Mail
+                        </Button>
+                        {roundState?.status === "in_progress" ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => void updateRoundStatus(member.student_id, "qualified")}
+                              disabled={updatingRoundStudentId === member.student_id}
+                              className="h-8 rounded-full px-3 border-slate-200 text-slate-700 hover:bg-slate-50"
+                            >
+                              Qualify
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => void updateRoundStatus(member.student_id, "rejected")}
+                              disabled={updatingRoundStudentId === member.student_id}
+                              className="h-8 rounded-full px-3 border-slate-200 text-slate-700 hover:bg-slate-50"
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        ) : null}
+                        {roundState?.can_mark_placed && !member.placement?.is_active && roundStatusMap.get(member.student_id) !== "rejected" ? (
+                          <Button
+                            size="sm"
+                            onClick={() => void markPlaced(member.student_id)}
+                            disabled={placingStudentId === member.student_id}
+                            className="h-8 rounded-full px-3 bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            Mark placed
+                          </Button>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+      {individualMailOpen && individualMailStudent ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold text-slate-900">Send individual mail</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                To <span className="font-medium">{individualMailStudent.name}</span> ({individualMailStudent.email})
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div className="grid gap-3 md:grid-cols-2">
+                <select
+                  value={individualMailType}
+                  onChange={(e) => setIndividualMailType(e.target.value as TpoMailType)}
+                  className="h-9 w-full rounded-full bg-slate-50 border border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                >
+                  <option value="shortlist_notice">Shortlist notice</option>
+                  <option value="prep_topics">Preparation topics</option>
+                  <option value="interview_schedule">Interview schedule</option>
+                  <option value="round_invite">Round invite</option>
+                  <option value="round_result">Round result (qualified/rejected)</option>
+                  <option value="process_custom">Custom process mail</option>
+                </select>
+                <Input
+                  placeholder="Additional note (optional)"
+                  value={individualAdditionalNote}
+                  onChange={(e) => setIndividualAdditionalNote(e.target.value)}
+                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                />
+              </div>
+              {individualMailType === "prep_topics" ? (
+                <Input
+                  placeholder="Prep topics (comma separated)"
+                  value={individualPrepTopicsText}
+                  onChange={(e) => setIndividualPrepTopicsText(e.target.value)}
+                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                />
+              ) : null}
+              {individualMailType === "interview_schedule" ? (
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Input
+                    type="date"
+                    value={individualInterviewDate}
+                    onChange={(e) => setIndividualInterviewDate(e.target.value)}
+                    className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                  />
+                  <Input
+                    type="time"
+                    value={individualInterviewStart}
+                    onChange={(e) => setIndividualInterviewStart(e.target.value)}
+                    className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                  />
+                  <Input
+                    type="time"
+                    value={individualInterviewEnd}
+                    onChange={(e) => setIndividualInterviewEnd(e.target.value)}
+                    className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                  />
+                </div>
+              ) : null}
+              {individualMailType === "process_custom" ? (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Custom subject"
+                    value={individualCustomSubject}
+                    onChange={(e) => setIndividualCustomSubject(e.target.value)}
+                    className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                  />
+                  <Textarea
+                    value={individualCustomBody}
+                    onChange={(e) => setIndividualCustomBody(e.target.value)}
+                    placeholder="Custom body (supports {student_name}, {company_name})"
+                    className="min-h-[100px] w-full rounded-2xl bg-slate-50 border-transparent hover:bg-slate-100 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400"
+                  />
+                </div>
+              ) : null}
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={closeIndividualMailComposer}
+                disabled={individualMailing}
+                className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => void sendIndividualMail()}
+                disabled={individualMailing}
+                className="h-9 rounded-full px-4 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {individualMailing ? "Sending..." : "Send mail"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}

@@ -1,0 +1,113 @@
+services:
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.prod
+    container_name: verifai-web
+    ports:
+      - "28084:3000"
+    environment:
+      # Set to your public API URL when the UI is not served from the same host as the browser.
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:28082}
+    depends_on:
+      master-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: verifai-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-verifai}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d verifai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  master-service:
+    build:
+      context: ./master-service
+      dockerfile: Dockerfile.prod
+    container_name: master-service
+    ports:
+      - "28082:8080"
+    # Production: set a strong AUTH_JWT_SECRET and CORS_ALLOWED_ORIGINS (public web + API origins) in master-service/.env.
+    env_file:
+      - ./master-service/.env
+    environment:
+      RESUME_ANALYZER_BASE_URL: http://resume-analyzer:8080
+      CODING_ANALYZER_BASE_URL: http://coding-analyzer:8080
+      MARKSHEET_ANALYZER_BASE_URL: http://marksheet-analyzer:8080
+      JD_ANALYZER_BASE_URL: http://jd-analyzer:8080
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-verifai}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      resume-analyzer:
+        condition: service_started
+      coding-analyzer:
+        condition: service_started
+      marksheet-analyzer:
+        condition: service_started
+      jd-analyzer:
+        condition: service_started
+    restart: unless-stopped
+
+  coding-analyzer:
+    build:
+      context: ./coding-analyzer
+      dockerfile: Dockerfile.prod
+    container_name: coding-analyzer
+    ports:
+      - "28080:8080"
+    restart: unless-stopped
+
+  resume-analyzer:
+    build:
+      context: ./resume-analyzer
+      dockerfile: Dockerfile.prod
+    container_name: resume-analyzer
+    ports:
+      - "28081:8080"
+    restart: unless-stopped
+
+  marksheet-analyzer:
+    build:
+      context: ./marksheet-analyzer
+      dockerfile: Dockerfile.prod
+    container_name: marksheet-analyzer
+    ports:
+      - "28083:8080"
+    restart: unless-stopped
+
+  jd-analyzer:
+    build:
+      context: ./jd-analyzer
+      dockerfile: Dockerfile.prod
+    container_name: jd-analyzer
+    ports:
+      - "28085:8080"
+    env_file:
+      - ./jd-analyzer/.env
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

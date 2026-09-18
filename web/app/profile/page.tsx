@@ -146,6 +146,9 @@ export default function ProfilePage() {
   const resumeUrl =
     profile.resume_url ||
     (typeof profile.resume_data?.url === "string" ? profile.resume_data.url : null);
+  const marksheetUrl =
+    profile.marksheet_url ||
+    (typeof profile.academic_data?.url === "string" ? profile.academic_data.url : null);
   const resumePreviewUrl = resumeUrl
     ? `/api/resume-preview?url=${encodeURIComponent(resumeUrl)}`
     : null;
@@ -233,6 +236,19 @@ export default function ProfilePage() {
                   <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Unverified</span>
                 )}
               </div>
+              {marksheetUrl ? (
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Marksheet</span>
+                  <a
+                    href={marksheetUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 underline"
+                  >
+                    View document
+                  </a>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
 

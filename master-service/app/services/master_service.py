@@ -2,13 +2,19 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from urllib.parse import parse_qs, urlparse
 from typing import Any
 
 import httpx
 
 from app.config import get_settings
 from core_engine.service import score_existing_analysis
-from app.services.storage_service import upload_resume_to_s3
+from app.services.storage_service import (
+    download_resume_from_s3,
+    upload_marksheet_to_s3,
+    upload_resume_to_s3,
+    verify_resume_access_token,
+)
 from app.services.downstream import (
     DEFAULT_HEADERS,
     call_coding_analyzer,
@@ -94,6 +100,7 @@ def normalize_master_output(
     github_username: str,
     leetcode_username: str,
     resume_url: str | None,
+    marksheet_url: str | None = None,
 ) -> dict[str, Any]:
     marksheet_cgpa = _safe_float(marksheet.get("cgpa_computed"))
     resume_cgpa = _safe_float(resume.get("cgpa"))
@@ -112,6 +119,10 @@ def normalize_master_output(
     coding_persona = str(coding.get("coding_persona") or coding.get("coding_level") or "").strip()
     cand = marksheet.get("candidate") if isinstance(marksheet.get("candidate"), dict) else {}
     roll_from_sheet = str(cand.get("roll_no") or "").strip().upper()
+    if resume_url and "url" not in resume:
+        resume["url"] = resume_url
+    if marksheet_url and "url" not in marksheet:
+        marksheet["url"] = marksheet_url
     profile = {
         "student": {
             "name": str(resume.get("name") or cand.get("name") or "").strip(),
@@ -141,6 +152,7 @@ def normalize_master_output(
         "github_data": github_data,
         "leetcode_data": leetcode_data,
         "resume_url": resume_url,
+        "marksheet_url": marksheet_url,
     }
     return profile
 
@@ -209,6 +221,12 @@ async def analyze_student_profile(
         filename=resume_filename,
         content_type=resume_content_type,
     )
+    marksheet_url = await upload_marksheet_to_s3(
+        settings=settings,
+        marksheet_bytes=marksheet_file,
+        filename=marksheet_filename,
+        content_type=marksheet_content_type,
+    )
     normalized = normalize_master_output(
         resume=resume_data,
         coding=coding_data,
@@ -216,6 +234,7 @@ async def analyze_student_profile(
         github_username=github.strip(),
         leetcode_username=leetcode.strip(),
         resume_url=resume_url,
+        marksheet_url=marksheet_url,
     )
     logger.info("Completed profile analysis for email=%s", normalized["student"]["email"])
     return normalized
@@ -239,13 +258,19 @@ async def analyze_student_profile_incremental(
     github: str,
     leetcode: str,
     existing_resume_url: str | None,
+    existing_marksheet_url: str | None = None,
 ) -> dict[str, Any]:
     settings = get_settings()
 
     resume_data = dict(existing_resume_data or {})
     marksheet_data = dict(existing_marksheet_data or {})
     coding_data = _coerce_existing_coding_payload(existing_coding_data)
-    resume_url = existing_resume_url
+    resume_url = existing_resume_url or (
+        existing_resume_data.get("url") if isinstance(existing_resume_data, dict) else None
+    )
+    marksheet_url = existing_marksheet_url or (
+        existing_marksheet_data.get("url") if isinstance(existing_marksheet_data, dict) else None
+    )
 
     async with httpx.AsyncClient(headers=DEFAULT_HEADERS) as client:
         if resume_changed:
@@ -269,6 +294,41 @@ async def analyze_student_profile_incremental(
                 content_type=resume_content_type,
             )
 
+            # Re-run academic verification from the stored source document so
+            # cross-source scores are recalculated as one complete profile.
+            lookup_marksheet_url = existing_marksheet_url or (
+                existing_marksheet_data.get("url") if isinstance(existing_marksheet_data, dict) else None
+            )
+            if not marksheet_changed and lookup_marksheet_url:
+                parsed = urlparse(lookup_marksheet_url)
+                token = parsed.path.rstrip("/").rsplit("/", 1)[-1]
+                signature = parse_qs(parsed.query).get("sig", [""])[0]
+                object_key = verify_resume_access_token(
+                    settings=settings, token=token, signature=signature
+                )
+                try:
+                    stored_bytes, stored_type, stored_name = await download_resume_from_s3(
+                        settings=settings, object_key=object_key
+                    )
+                except Exception as exc:
+                    raise ValueError(f"Failed to download stored marksheet from S3: {exc}") from exc
+                m_data, m_err = await call_marksheet_analyzer(
+                    settings=settings,
+                    client=client,
+                    file_bytes=stored_bytes,
+                    filename=stored_name,
+                    content_type=stored_type,
+                )
+                if m_err or m_data is None:
+                    raise ValueError(f"Stored marksheet analyzer failed: {m_err or 'unknown error'}")
+                if not has_candidate_basic_details(m_data):
+                    raise ValueError("Stored marksheet no longer passes identity validation.")
+                if "file_name" not in m_data and isinstance(existing_marksheet_data, dict) and existing_marksheet_data.get("file_name"):
+                    m_data["file_name"] = existing_marksheet_data["file_name"]
+                marksheet_data = m_data
+                if not marksheet_url:
+                    marksheet_url = lookup_marksheet_url
+
         if marksheet_changed:
             if not marksheet_file or not marksheet_filename:
                 raise ValueError("Marksheet file is required when marksheet_changed is true.")
@@ -286,6 +346,12 @@ async def analyze_student_profile_incremental(
                     "Invalid marksheet: basic candidate details are missing (name, class, and roll/enrollment)."
                 )
             marksheet_data = m_data
+            marksheet_url = await upload_marksheet_to_s3(
+                settings=settings,
+                marksheet_bytes=marksheet_file,
+                filename=marksheet_filename,
+                content_type=marksheet_content_type,
+            )
 
         if coding_changed:
             c_data, c_err = await call_coding_analyzer(
@@ -316,4 +382,5 @@ async def analyze_student_profile_incremental(
         github_username=github.strip(),
         leetcode_username=leetcode.strip(),
         resume_url=resume_url,
+        marksheet_url=marksheet_url,
     )

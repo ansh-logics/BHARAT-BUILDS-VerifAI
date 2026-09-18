@@ -15,6 +15,7 @@ router = APIRouter(prefix="/storage", tags=["storage"])
 
 
 @router.get("/resumes/{token}")
+@router.get("/marksheets/{token}")
 async def download_resume(token: str, sig: str = Query(min_length=64, max_length=64)) -> Response:
     settings = get_settings()
     try:
@@ -26,7 +27,7 @@ async def download_resume(token: str, sig: str = Query(min_length=64, max_length
     except ValueError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
     except Exception as exc:
-        raise HTTPException(status_code=502, detail="Resume storage is temporarily unavailable.") from exc
+        raise HTTPException(status_code=502, detail="Document storage is temporarily unavailable.") from exc
     return Response(
         content=content,
         media_type=content_type,

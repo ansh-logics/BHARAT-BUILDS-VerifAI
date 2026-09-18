@@ -165,6 +165,7 @@ class StudentAnalyzeResponse(BaseModel):
     academics: AcademicsData = Field(default_factory=AcademicsData)
     overall_score: float = Field(default=0.0, ge=0, le=100)
     resume_url: str | None = None
+    marksheet_url: str | None = None
     resume_data: dict[str, Any] = Field(default_factory=dict)
     academic_data: dict[str, Any] = Field(default_factory=dict)
 
@@ -209,6 +210,7 @@ class StudentProfileResponse(BaseModel):
     overall_score: float
     readiness: PlacementReadiness
     resume_url: str | None = None
+    marksheet_url: str | None = None
     resume_data: dict[str, Any] = Field(default_factory=dict)
     academic_data: dict[str, Any] = Field(default_factory=dict)
     github_data: dict[str, Any] = Field(default_factory=dict)

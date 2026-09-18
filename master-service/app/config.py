@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
     s3_resume_bucket: str = ""
     s3_resume_prefix: str = "resumes"
+    s3_marksheet_prefix: str = "marksheets"
     s3_presigned_expiry_seconds: int = 300
     public_api_base_url: str = "http://localhost:8080"
     storage_signing_secret: str = ""

@@ -349,6 +349,13 @@ class ProfileService:
             if marksheet_changed:
                 student.cgpa = payload.student.cgpa
                 student.cgpa_verified = payload.student.cgpa_verified
+                target_academic_blob = payload.academic_data if isinstance(payload.academic_data, dict) else {}
+                active_backlogs = target_academic_blob.get("active_backlogs")
+                if active_backlogs is not None:
+                    try:
+                        student.has_active_backlog = int(active_backlogs) > 0
+                    except (ValueError, TypeError):
+                        student.has_active_backlog = bool(active_backlogs)
             if payload.student.roll_no:
                 student.roll_no = payload.student.roll_no
 
@@ -420,8 +427,20 @@ class ProfileService:
                 .order_by(RawUpload.uploaded_at.desc(), RawUpload.id.desc())
                 .first()
             )
-            resolved_resume_url = payload.resume_url or (latest_upload.resume_url if latest_upload else None)
-            resolved_marksheet_url = payload.marksheet_url or (latest_upload.marksheet_url if latest_upload else None)
+            resolved_resume_url = (
+                payload.resume_url
+                or (latest_upload.resume_url if latest_upload else None)
+                or (profile.resume_data.get("url") if profile and isinstance(profile.resume_data, dict) else None)
+            )
+            resolved_marksheet_url = (
+                payload.marksheet_url
+                or (latest_upload.marksheet_url if latest_upload else None)
+                or (profile.academic_data.get("url") if profile and isinstance(profile.academic_data, dict) else None)
+            )
+            if resolved_resume_url and "url" not in resume_data:
+                resume_data["url"] = resolved_resume_url
+            if resolved_marksheet_url and "url" not in academic_data:
+                academic_data["url"] = resolved_marksheet_url
             raw_upload = RawUpload(
                 student_id=student.id,
                 resume_url=resolved_resume_url,
@@ -456,7 +475,12 @@ class ProfileService:
             .first()
         )
 
-        resume_url = latest_upload.resume_url if latest_upload else None
+        resume_url = (latest_upload.resume_url if latest_upload else None) or (
+            profile.resume_data.get("url") if isinstance(profile.resume_data, dict) else None
+        )
+        marksheet_url = (latest_upload.marksheet_url if latest_upload else None) or (
+            profile.academic_data.get("url") if isinstance(profile.academic_data, dict) else None
+        )
         readiness = build_placement_readiness(
             overall_score=profile.overall_score,
             coding_score=profile.coding_score,
@@ -496,6 +520,7 @@ class ProfileService:
             overall_score=profile.overall_score,
             readiness=readiness,
             resume_url=resume_url,
+            marksheet_url=marksheet_url,
             resume_data=profile.resume_data or {},
             academic_data=profile.academic_data or {},
             github_data=profile.github_data or {},

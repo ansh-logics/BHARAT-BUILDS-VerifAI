@@ -4,6 +4,7 @@ import asyncio
 import base64
 import hashlib
 import hmac
+import posixpath
 import re
 from pathlib import Path
 from typing import Any
@@ -14,9 +15,9 @@ import boto3
 from app.config import Settings
 
 
-def _safe_filename(filename: str) -> str:
-    path = Path(filename or "resume.pdf")
-    stem = re.sub(r"[^a-zA-Z0-9_-]+", "-", path.stem).strip("-") or "resume"
+def _safe_filename(filename: str, default_stem: str = "resume") -> str:
+    path = Path(filename or f"{default_stem}.pdf")
+    stem = re.sub(r"[^a-zA-Z0-9_-]+", "-", path.stem).strip("-") or default_stem
     suffix = path.suffix.lower() if path.suffix.lower() in {".pdf", ".docx"} else ".bin"
     return f"{stem[:80]}{suffix}"
 
@@ -44,6 +45,12 @@ def build_resume_access_url(*, settings: Settings, object_key: str) -> str:
     return f"{settings.public_api_base_url.rstrip('/')}/storage/resumes/{token}?sig={signature}"
 
 
+def build_marksheet_access_url(*, settings: Settings, object_key: str) -> str:
+    token = _encode_key(object_key)
+    signature = _signature(settings, token)
+    return f"{settings.public_api_base_url.rstrip('/')}/storage/marksheets/{token}?sig={signature}"
+
+
 def verify_resume_access_token(*, settings: Settings, token: str, signature: str) -> str:
     if not signature or not hmac.compare_digest(_signature(settings, token), signature):
         raise ValueError("Invalid resume access signature.")
@@ -51,8 +58,12 @@ def verify_resume_access_token(*, settings: Settings, token: str, signature: str
         object_key = _decode_key(token)
     except Exception as exc:
         raise ValueError("Invalid resume access token.") from exc
-    expected_prefix = f"{settings.s3_resume_prefix.strip('/')}/"
-    if not object_key.startswith(expected_prefix) or ".." in object_key:
+    allowed_prefixes = (
+        f"{settings.s3_resume_prefix.strip('/')}/",
+        f"{settings.s3_marksheet_prefix.strip('/')}/",
+    )
+    normalized = posixpath.normpath(object_key)
+    if not object_key.startswith(allowed_prefixes) or ".." in object_key or "\\" in object_key or normalized != object_key:
         raise ValueError("Invalid resume object key.")
     return object_key
 
@@ -100,6 +111,42 @@ async def upload_resume_to_s3(
     )
 
 
+async def upload_marksheet_to_s3(
+    *,
+    settings: Settings,
+    marksheet_bytes: bytes,
+    filename: str,
+    content_type: str | None = None,
+) -> str:
+    object_key = await asyncio.to_thread(
+        _upload_document_sync,
+        settings=settings,
+        content=marksheet_bytes,
+        filename=filename,
+        content_type=content_type,
+        prefix=settings.s3_marksheet_prefix,
+    )
+    return build_marksheet_access_url(settings=settings, object_key=object_key)
+
+
+def _upload_document_sync(
+    *, settings: Settings, content: bytes, filename: str, content_type: str | None, prefix: str
+) -> str:
+    if not settings.s3_resume_bucket:
+        raise ValueError("S3 document storage is not configured. Set S3_RESUME_BUCKET.")
+    stem = "marksheet" if "marksheet" in prefix else "resume"
+    object_key = f"{prefix.strip('/')}/{uuid4().hex}/{_safe_filename(filename, default_stem=stem)}"
+    _s3_client(settings).put_object(
+        Bucket=settings.s3_resume_bucket,
+        Key=object_key,
+        Body=content,
+        ContentType=content_type or "application/octet-stream",
+        ServerSideEncryption="AES256",
+        Metadata={"original-filename": filename[:512]},
+    )
+    return object_key
+
+
 async def create_presigned_resume_download_url(*, settings: Settings, object_key: str) -> str:
     if not settings.s3_resume_bucket:
         raise ValueError("S3 resume storage is not configured. Set S3_RESUME_BUCKET.")
@@ -133,7 +180,17 @@ async def download_resume_from_s3(
         finally:
             body.close()
         content_type = str(response.get("ContentType") or "application/octet-stream")
-        filename = Path(object_key).name or "resume.pdf"
+        fallback_name = (
+            "marksheet.pdf"
+            if settings.s3_marksheet_prefix.strip("/") in object_key
+            else "resume.pdf"
+        )
+        filename = Path(object_key).name or fallback_name
         return content, content_type, filename
 
     return await asyncio.to_thread(_download)
+
+
+verify_marksheet_access_token = verify_resume_access_token
+download_document_from_s3 = download_resume_from_s3
+create_presigned_document_download_url = create_presigned_resume_download_url

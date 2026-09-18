@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
 
   if (
     resumeUrl.origin !== allowedApiOrigin() ||
-    !resumeUrl.pathname.startsWith("/storage/resumes/")
+    (!resumeUrl.pathname.startsWith("/storage/resumes/") &&
+      !resumeUrl.pathname.startsWith("/storage/marksheets/"))
   ) {
     return NextResponse.json({ detail: "Resume URL is not allowed." }, { status: 403 });
   }

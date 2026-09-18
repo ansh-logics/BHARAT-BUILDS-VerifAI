@@ -117,10 +117,17 @@ function extractUsername(value: unknown): string {
   return "";
 }
 
-function extractFileName(value: unknown): string {
-  if (!value || typeof value !== "object") return "";
-  const fileName = (value as Record<string, unknown>).file_name;
-  return typeof fileName === "string" ? fileName.trim() : "";
+function extractFileName(value: unknown, fallbackUrl?: string | null): string {
+  if (value && typeof value === "object") {
+    const fileName = (value as Record<string, unknown>).file_name;
+    if (typeof fileName === "string" && fileName.trim()) {
+      return fileName.trim();
+    }
+  }
+  if (fallbackUrl) {
+    return "Uploaded document";
+  }
+  return "";
 }
 
 function getGithubUsername(profile: Awaited<ReturnType<typeof getMyProfile>>): string {
@@ -188,8 +195,8 @@ export default function DashboardPage() {
         const branchValue = BRANCHES.includes(profile.student.branch as BranchOption)
           ? (profile.student.branch as BranchOption)
           : "Other";
-        setExistingResumeFileName(extractFileName(profile.resume_data));
-        setExistingMarksheetFileName(extractFileName(profile.academic_data));
+        setExistingResumeFileName(extractFileName(profile.resume_data, profile.resume_url));
+        setExistingMarksheetFileName(extractFileName(profile.academic_data, profile.marksheet_url));
         const githubBaseline = getGithubUsername(profile);
         const leetcodeBaseline = getLeetcodeUsername(profile);
         setBaselineGithubUsername(githubBaseline);
@@ -465,6 +472,7 @@ export default function DashboardPage() {
           academics: profileSnapshot.academics,
           overall_score: profileSnapshot.overall_score,
           resume_url: profileSnapshot.resume_url ?? null,
+          marksheet_url: profileSnapshot.marksheet_url ?? null,
           resume_data: profileSnapshot.resume_data,
           academic_data: profileSnapshot.academic_data,
         };
@@ -511,7 +519,7 @@ export default function DashboardPage() {
         },
         overall_score: effectiveAnalysis.overall_score,
         resume_url: effectiveAnalysis.resume_url,
-        marksheet_url: null,
+        marksheet_url: effectiveAnalysis.marksheet_url,
         resume_data: {
           ...(effectiveAnalysis.resume_data || {}),
           file_name: currentResumeFileName || null,
@@ -525,7 +533,7 @@ export default function DashboardPage() {
         update_sources: hasExistingProfile
           ? [
               ...(resumeDirty ? (["resume"] as const) : []),
-              ...(marksheetDirty ? (["marksheet"] as const) : []),
+              ...(marksheetDirty || resumeDirty ? (["marksheet"] as const) : []),
               ...(codingDirty ? (["coding"] as const) : []),
             ]
           : ["resume", "marksheet", "coding"],
@@ -615,9 +623,21 @@ export default function DashboardPage() {
                     <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Missing</span>
                   )}
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {currentResumeFileName || "No file uploaded"}
-                </p>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground truncate">
+                    {currentResumeFileName || "No file uploaded"}
+                  </p>
+                  {(analysisResult?.resume_url || profileSnapshot?.resume_url) ? (
+                    <a
+                      href={analysisResult?.resume_url || profileSnapshot?.resume_url || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="shrink-0 text-xs font-semibold text-blue-600 hover:text-blue-800 underline"
+                    >
+                      View Resume
+                    </a>
+                  ) : null}
+                </div>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
                 <div className="flex items-center justify-between gap-3">
@@ -628,9 +648,21 @@ export default function DashboardPage() {
                     <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Missing</span>
                   )}
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {currentMarksheetFileName || "No file uploaded"}
-                </p>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground truncate">
+                    {currentMarksheetFileName || "No file uploaded"}
+                  </p>
+                  {(analysisResult?.marksheet_url || profileSnapshot?.marksheet_url) ? (
+                    <a
+                      href={analysisResult?.marksheet_url || profileSnapshot?.marksheet_url || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="shrink-0 text-xs font-semibold text-blue-600 hover:text-blue-800 underline"
+                    >
+                      View Marksheet
+                    </a>
+                  ) : null}
+                </div>
               </div>
             </div>
             <Button type="button" onClick={openFileDialog} className="w-full bg-blue-600 text-white hover:bg-blue-700 md:w-auto">
@@ -888,6 +920,19 @@ export default function DashboardPage() {
                       <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Unverified</span>
                     )}
                   </div>
+                  {(analysisResult?.marksheet_url || profileSnapshot?.marksheet_url) ? (
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-slate-500">Document</span>
+                      <a
+                        href={analysisResult?.marksheet_url || profileSnapshot?.marksheet_url || "#"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                      >
+                        View Marksheet
+                      </a>
+                    </div>
+                  ) : null}
                 </CardContent>
               </Card>
 
@@ -930,9 +975,21 @@ export default function DashboardPage() {
                   accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   onChange={(e) => setPendingResumeFile(e.target.files?.[0] ?? null)}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Current: {pendingResumeFile?.name || currentResumeFileName || "No file uploaded"}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    Current: {pendingResumeFile?.name || currentResumeFileName || "No file uploaded"}
+                  </p>
+                  {(profileSnapshot?.resume_url || analysisResult?.resume_url) && !pendingResumeFile ? (
+                    <a
+                      href={profileSnapshot?.resume_url || analysisResult?.resume_url || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-semibold text-blue-600 hover:underline"
+                    >
+                      View document
+                    </a>
+                  ) : null}
+                </div>
               </div>
 
               <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
@@ -949,9 +1006,21 @@ export default function DashboardPage() {
                   accept=".pdf,application/pdf"
                   onChange={(e) => setPendingMarksheetFile(e.target.files?.[0] ?? null)}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Current: {pendingMarksheetFile?.name || currentMarksheetFileName || "No file uploaded"}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    Current: {pendingMarksheetFile?.name || currentMarksheetFileName || "No file uploaded"}
+                  </p>
+                  {(profileSnapshot?.marksheet_url || analysisResult?.marksheet_url) && !pendingMarksheetFile ? (
+                    <a
+                      href={profileSnapshot?.marksheet_url || analysisResult?.marksheet_url || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-semibold text-blue-600 hover:underline"
+                    >
+                      View document
+                    </a>
+                  ) : null}
+                </div>
               </div>
             </div>
 

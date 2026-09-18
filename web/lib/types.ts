@@ -34,6 +34,7 @@ export interface AnalyzeResponse {
   };
   overall_score: number;
   resume_url: string | null;
+  marksheet_url: string | null;
   resume_data: Record<string, unknown>;
   academic_data: Record<string, unknown>;
 }
@@ -153,6 +154,7 @@ export interface StudentProfileDetail {
     }>;
   };
   resume_url?: string | null;
+  marksheet_url?: string | null;
   resume_data: Record<string, unknown>;
   academic_data: Record<string, unknown>;
   github_data: Record<string, unknown>;

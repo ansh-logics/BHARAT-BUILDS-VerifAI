@@ -568,7 +568,14 @@ async def analyze_student_incremental(
             branch=branch_clean,
             github=github_clean,
             leetcode=leetcode_clean,
-            existing_resume_url=latest_upload.resume_url if latest_upload else None,
+            existing_resume_url=(
+                (latest_upload.resume_url if latest_upload else None)
+                or (profile.resume_data.get("url") if isinstance(profile.resume_data, dict) else None)
+            ),
+            existing_marksheet_url=(
+                (latest_upload.marksheet_url if latest_upload else None)
+                or (profile.academic_data.get("url") if isinstance(profile.academic_data, dict) else None)
+            ),
         )
     except ValueError as exc:
         logger.exception("Incremental analyzer failure")

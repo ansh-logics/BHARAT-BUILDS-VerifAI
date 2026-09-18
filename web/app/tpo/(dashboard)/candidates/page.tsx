@@ -4,7 +4,7 @@ import * as React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, FileText, Loader2, Search, Target, Trophy, UploadCloud, Users, X, Download, Zap } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, ChevronDown, FileText, Loader2, Search, Sparkles, Target, Trophy, UploadCloud, Users, X, Download, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -96,6 +96,38 @@ function normalizeBranch(value: string | null | undefined): string {
   if (compact === "aiml" || compact === "artificialintelligencemachinelearning") return "aiml";
   if (compact === "datascience" || compact === "ds") return "ds";
   return compact;
+}
+
+function getClarificationChips(question: string): { label: string; text: string }[] {
+  const q = question.toLowerCase();
+  if (q.includes("unplaced") || q.includes("placed")) {
+    return [
+      { label: "Unplaced only", text: "Filter only unplaced students" },
+      { label: "Placed as well", text: "Consider both placed and unplaced students" },
+    ];
+  }
+  if (q.includes("backlog")) {
+    return [
+      { label: "Exclude backlogs", text: "Strictly exclude candidates with active backlogs" },
+      { label: "Allow backlogs", text: "Allow candidates with active backlogs" },
+    ];
+  }
+  if (q.includes("branch") || q.includes("branches")) {
+    return [
+      { label: "CSE / IT only", text: "Restrict candidates to CSE and IT branches" },
+      { label: "All branches", text: "Open to candidates from all branches" },
+    ];
+  }
+  if (q.includes("cgpa")) {
+    return [
+      { label: "Strict CGPA", text: "Strictly enforce the specified CGPA criteria" },
+      { label: "Flexible CGPA", text: "Allow flexible CGPA for high-scoring skill matches" },
+    ];
+  }
+  return [
+    { label: "Yes, apply", text: `Yes, ${question.replace(/\?$/, "")}` },
+    { label: "Dismiss", text: "" },
+  ];
 }
 
 function toCandidate(raw: JDMatchCandidate): UICandidate {
@@ -222,6 +254,44 @@ export default function TpoDashboardPage() {
   const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isPromptMinimized, setIsPromptMinimized] = useState(false);
+  const [dismissedClarifications, setDismissedClarifications] = useState<Record<number, boolean>>({});
+
+  const activeClarifications = useMemo(() => {
+    if (!parsedJD?.clarification_questions?.length) return [];
+    return parsedJD.clarification_questions
+      .map((q, idx) => ({ question: q, idx }))
+      .filter(({ idx }) => !dismissedClarifications[idx]);
+  }, [parsedJD, dismissedClarifications]);
+
+  const handleSelectClarificationAnswer = (idx: number, answerText: string, answerLabel: string) => {
+    setDismissedClarifications((prev) => ({ ...prev, [idx]: true }));
+    setJdInput((prev) => {
+      const trimmed = prev.trim();
+      return trimmed ? `${trimmed}\n• ${answerText}` : answerText;
+    });
+    setIsInputExpanded(true);
+    toast.success(`Added clarification: "${answerLabel}"`, {
+      description: "Click Analyze to apply constraint and re-rank candidates.",
+    });
+  };
+
+  const handleClickQuestion = (idx: number, question: string) => {
+    setJdInput((prev) => {
+      const trimmed = prev.trim();
+      const promptAddition = `\nClarification requirement: [${question}] `;
+      return trimmed ? `${trimmed}${promptAddition}` : promptAddition.trim();
+    });
+    setIsInputExpanded(true);
+    setTimeout(() => {
+      jdTextareaRef.current?.focus();
+    }, 100);
+    toast.info("Prompt updated with clarification. Type your answer and click Analyze.");
+  };
+
+  const handleDismissClarification = (idx: number) => {
+    setDismissedClarifications((prev) => ({ ...prev, [idx]: true }));
+  };
 
   const COMPACT_HEIGHT = 48;
   const EXPANDED_MIN_HEIGHT = 200;
@@ -329,6 +399,7 @@ export default function TpoDashboardPage() {
       setFilters(response.filters);
       setSkills([]);
       setExpandedKey(null);
+      setDismissedClarifications({});
     } catch (error) {
       if (axios.isAxiosError(error) && [401, 403].includes(error.response?.status ?? 0)) {
         clearTpoAuth();
@@ -783,25 +854,6 @@ export default function TpoDashboardPage() {
                     .join(" | ") || "Parsed successfully"}
                 </div>
               )}
-              {parsedJD && parsedJD.clarification_questions && parsedJD.clarification_questions.length > 0 && (
-                <div className="px-6 py-3 border-b border-indigo-100 bg-gradient-to-r from-indigo-50/70 via-sky-50/40 to-white text-xs text-indigo-950 flex flex-col gap-1.5">
-                  <div className="flex items-center gap-2 font-semibold text-indigo-800">
-                    <Zap className="h-3.5 w-3.5 text-indigo-600 animate-pulse" />
-                    <span>AI Assistant Insights & Clarifications</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2 pt-0.5">
-                    {parsedJD.clarification_questions.map((q, idx) => (
-                      <div
-                        key={idx}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-indigo-200 text-indigo-900 shadow-xs hover:border-indigo-300 transition-colors"
-                      >
-                        <span className="text-indigo-500 font-medium">Q:</span>
-                        <span>{q}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               <div className="overflow-x-auto">
                 <Table className="w-full">
@@ -924,129 +976,305 @@ export default function TpoDashboardPage() {
               </div>
             </section>
 
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-3xl z-50 px-4">
-              {(() => {
-                const fileExt = fileUpload ? (fileUpload.name.match(/\.([^.]+)$/)?.[1] || "FILE").toUpperCase() : "";
-                const fileBase = fileUpload ? fileUpload.name.replace(/\.[^.]+$/, "") : "";
-                return (
-                  <motion.div
-                    ref={composerRef}
-                    layout
-                    transition={{ layout: { type: "spring", stiffness: 320, damping: 36, mass: 0.85 } }}
-                    className="bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/60 hover:shadow-[0_8px_30px_rgb(0,0,0,0.16)] rounded-[28px] p-3 flex flex-col"
-                  >
-                    <AnimatePresence initial={false}>
-                      {fileUpload && (
+            <AnimatePresence mode="wait">
+              {!isPromptMinimized ? (
+                <motion.div
+                  key="composer-panel"
+                  initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.2,
+                    x: 340,
+                    y: 40,
+                    transition: { duration: 0.32, ease: [0.36, 0.66, 0.04, 1] },
+                  }}
+                  transition={{ type: "spring", stiffness: 320, damping: 30 }}
+                  className="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-3xl z-50 px-4 pointer-events-none"
+                >
+                  <div className="pointer-events-auto flex flex-col items-center w-full">
+                    {/* Floating Clickable Clarification Capsule */}
+                    <AnimatePresence>
+                      {activeClarifications.length > 0 && (
                         <motion.div
-                          key="file-chip"
-                          layout
-                          initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                          animate={{ opacity: 1, height: "auto", marginBottom: 8 }}
-                          exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 34, mass: 0.9 }}
-                          className="flex flex-wrap gap-2 px-1 overflow-hidden"
+                          key="clarification-capsule"
+                          initial={{ opacity: 0, y: 16, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 12, scale: 0.96 }}
+                          transition={{ duration: 0.22, ease: "easeOut" }}
+                          className="w-full mb-3 rounded-2xl bg-white/95 backdrop-blur-md border border-indigo-200/80 shadow-[0_8px_30px_rgba(79,70,229,0.14)] p-3 flex flex-col gap-2"
                         >
-                          <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl pl-2 pr-2 py-2 max-w-[260px]">
-                            <div className="size-9 rounded-lg bg-red-500 text-white flex items-center justify-center shrink-0">
-                              <FileText className="size-4" />
-                            </div>
-                            <div className="min-w-0 pr-1">
-                              <div className="text-sm font-medium text-slate-900 truncate leading-tight" title={fileUpload.name}>
-                                {fileBase}
-                              </div>
-                              <div className="text-[11px] text-slate-500 uppercase leading-tight tracking-wide">
-                                {fileExt}
-                              </div>
+                          <div className="flex items-center justify-between gap-2 px-1">
+                            <div className="flex items-center gap-2">
+                              <span className="flex size-6 items-center justify-center rounded-lg bg-gradient-to-tr from-indigo-600 to-sky-600 text-white shadow-xs">
+                                <Sparkles className="size-3.5" />
+                              </span>
+                              <span className="text-xs font-semibold text-indigo-950 tracking-tight">
+                                AI Assistant Clarifications
+                              </span>
+                              <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] px-2 py-0">
+                                Click to answer
+                              </Badge>
                             </div>
                             <button
                               type="button"
-                              onClick={() => setFileUpload(null)}
-                              className="ml-1 size-5 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center shrink-0"
-                              aria-label="Remove JD file"
+                              onClick={() => {
+                                const allDismissed: Record<number, boolean> = {};
+                                activeClarifications.forEach((c) => {
+                                  allDismissed[c.idx] = true;
+                                });
+                                setDismissedClarifications((prev) => ({ ...prev, ...allDismissed }));
+                              }}
+                              className="text-slate-400 hover:text-slate-600 p-1 rounded-md hover:bg-slate-100 transition-colors"
+                              title="Dismiss all"
+                              aria-label="Dismiss all clarifications"
                             >
-                              <X className="size-3 text-slate-600" />
+                              <X className="size-3.5" />
                             </button>
+                          </div>
+
+                          <div className="space-y-2 pt-0.5">
+                            {activeClarifications.map(({ question, idx }) => {
+                              const chips = getClarificationChips(question);
+                              return (
+                                <motion.div
+                                  key={idx}
+                                  layout
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/70 hover:border-indigo-200/90 transition-colors"
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => handleClickQuestion(idx, question)}
+                                    className="text-left text-xs font-medium text-slate-800 hover:text-indigo-600 transition-colors flex items-start sm:items-center gap-1.5 min-w-0 group"
+                                    title="Click to answer in prompt editor"
+                                  >
+                                    <span className="text-indigo-600 font-semibold shrink-0">Q:</span>
+                                    <span className="group-hover:underline underline-offset-2">{question}</span>
+                                  </button>
+                                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                                    {chips.map((chip, chipIdx) => (
+                                      <button
+                                        key={chipIdx}
+                                        type="button"
+                                        onClick={() => handleSelectClarificationAnswer(idx, chip.text, chip.label)}
+                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white text-indigo-700 hover:bg-indigo-600 hover:text-white border border-indigo-200/80 hover:border-indigo-600 shadow-2xs hover:shadow-xs transition-all active:scale-95 cursor-pointer"
+                                      >
+                                        <Check className="size-3" />
+                                        <span>{chip.label}</span>
+                                      </button>
+                                    ))}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDismissClarification(idx)}
+                                      className="size-6 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors shrink-0 ml-0.5"
+                                      title="Dismiss question"
+                                      aria-label="Dismiss question"
+                                    >
+                                      <X className="size-3" />
+                                    </button>
+                                  </div>
+                                </motion.div>
+                              );
+                            })}
                           </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
 
-                    <motion.div
-                      layout
-                      className="min-w-0 relative overflow-hidden w-full px-1"
-                      animate={{ height: isInputExpanded ? composerInputHeight : COMPACT_HEIGHT }}
-                      transition={{ type: "spring", stiffness: 280, damping: 34, mass: 0.9 }}
-                    >
-                      <AnimatePresence mode="wait" initial={false}>
-                        {!isInputExpanded ? (
-                          <motion.button
-                            key="collapsed-preview"
-                            type="button"
-                            onClick={handleExpandInput}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.18, ease: "easeInOut" }}
-                            className="h-full w-full text-left text-base leading-6 text-slate-700 placeholder:text-slate-400 truncate overflow-hidden pr-4 inline-flex items-center [mask-image:linear-gradient(to_right,black_85%,transparent)]"
+                    {/* Composer Card */}
+                    {(() => {
+                      const fileExt = fileUpload ? (fileUpload.name.match(/\.([^.]+)$/)?.[1] || "FILE").toUpperCase() : "";
+                      const fileBase = fileUpload ? fileUpload.name.replace(/\.[^.]+$/, "") : "";
+                      return (
+                        <motion.div
+                          ref={composerRef}
+                          layout
+                          transition={{ layout: { type: "spring", stiffness: 320, damping: 36, mass: 0.85 } }}
+                          className="w-full relative bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/60 hover:shadow-[0_8px_30px_rgb(0,0,0,0.16)] rounded-[28px] p-3 flex flex-col"
+                        >
+                          <AnimatePresence initial={false}>
+                            {fileUpload && (
+                              <motion.div
+                                key="file-chip"
+                                layout
+                                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                animate={{ opacity: 1, height: "auto", marginBottom: 8 }}
+                                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 34, mass: 0.9 }}
+                                className="flex flex-wrap gap-2 px-1 overflow-hidden"
+                              >
+                                <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl pl-2 pr-2 py-2 max-w-[260px]">
+                                  <div className="size-9 rounded-lg bg-red-500 text-white flex items-center justify-center shrink-0">
+                                    <FileText className="size-4" />
+                                  </div>
+                                  <div className="min-w-0 pr-1">
+                                    <div className="text-sm font-medium text-slate-900 truncate leading-tight" title={fileUpload.name}>
+                                      {fileBase}
+                                    </div>
+                                    <div className="text-[11px] text-slate-500 uppercase leading-tight tracking-wide">
+                                      {fileExt}
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setFileUpload(null)}
+                                    className="ml-1 size-5 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center shrink-0"
+                                    aria-label="Remove JD file"
+                                  >
+                                    <X className="size-3 text-slate-600" />
+                                  </button>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          <motion.div
+                            layout
+                            className="min-w-0 relative overflow-hidden w-full px-1"
+                            animate={{ height: isInputExpanded ? composerInputHeight : COMPACT_HEIGHT }}
+                            transition={{ type: "spring", stiffness: 280, damping: 34, mass: 0.9 }}
                           >
-                            {collapsedPreview || "Describe JD and constraints or upload JD file..."}
-                          </motion.button>
-                        ) : (
-                          <motion.textarea
-                            key="expanded-textarea"
-                            ref={jdTextareaRef}
-                            value={jdInput}
-                            onChange={(e) => setJdInput(e.target.value)}
-                            onFocus={handleExpandInput}
-                            onClick={handleExpandInput}
-                            placeholder="Describe JD and constraints or upload JD file..."
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.18, ease: "easeInOut" }}
-                            className="h-full w-full resize-none bg-transparent border-none focus:outline-none text-slate-700 placeholder:text-slate-400 text-base leading-6 py-1 whitespace-pre-wrap overflow-y-auto"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                if (!loading) void runMatch();
-                              }
-                            }}
+                            <AnimatePresence mode="wait" initial={false}>
+                              {!isInputExpanded ? (
+                                <motion.button
+                                  key="collapsed-preview"
+                                  type="button"
+                                  onClick={handleExpandInput}
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 0.18, ease: "easeInOut" }}
+                                  className="h-full w-full text-left text-base leading-6 text-slate-700 placeholder:text-slate-400 truncate overflow-hidden pr-10 inline-flex items-center [mask-image:linear-gradient(to_right,black_85%,transparent)]"
+                                >
+                                  {collapsedPreview || "Describe JD and constraints or upload JD file..."}
+                                </motion.button>
+                              ) : (
+                                <motion.textarea
+                                  key="expanded-textarea"
+                                  ref={jdTextareaRef}
+                                  value={jdInput}
+                                  onChange={(e) => setJdInput(e.target.value)}
+                                  onFocus={handleExpandInput}
+                                  onClick={handleExpandInput}
+                                  placeholder="Describe JD and constraints or upload JD file..."
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 0.18, ease: "easeInOut" }}
+                                  className="h-full w-full resize-none bg-transparent border-none focus:outline-none text-slate-700 placeholder:text-slate-400 text-base leading-6 py-1 whitespace-pre-wrap overflow-y-auto pr-10"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                      e.preventDefault();
+                                      if (!loading) void runMatch();
+                                    }
+                                  }}
+                                />
+                              )}
+                            </AnimatePresence>
+                          </motion.div>
+
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center gap-1.5">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={loading}
+                                className="shrink-0 rounded-full size-10 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                                title="Upload JD file"
+                              >
+                                <UploadCloud className="size-5" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setIsPromptMinimized(true)}
+                                className="rounded-full h-8 px-2.5 text-xs text-slate-500 hover:text-slate-700 hover:bg-slate-100 gap-1.5"
+                                title="Hide search prompt to bottom-right circle"
+                              >
+                                <ChevronDown className="size-3.5" />
+                                <span>Hide</span>
+                              </Button>
+                            </div>
+                            <Button
+                              onClick={() => void runMatch()}
+                              disabled={loading || (!fileUpload && jdInput.trim().length < 20)}
+                              className="rounded-full h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm"
+                            >
+                              {loading ? <Loader2 className="size-5 animate-spin" /> : "Analyze"}
+                            </Button>
+                          </div>
+
+                          {/* Quick minimize icon button in top-right */}
+                          <button
+                            type="button"
+                            onClick={() => setIsPromptMinimized(true)}
+                            className="absolute top-3.5 right-3.5 size-7 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors"
+                            title="Hide search prompt"
+                            aria-label="Hide search prompt"
+                          >
+                            <ChevronDown className="size-4" />
+                          </button>
+
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            className="hidden"
+                            onChange={(e) => setFileUpload(e.target.files?.[0] ?? null)}
                           />
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
+                        </motion.div>
+                      );
+                    })()}
+                  </div>
+                </motion.div>
+              ) : (
+                /* Floating Circle in Bottom-Right Corner */
+                <motion.div
+                  key="minimized-fab"
+                  initial={{ opacity: 0, scale: 0.2, rotate: -25, x: -60, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0, x: 0, y: 0 }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.2,
+                    rotate: 25,
+                    x: -60,
+                    y: 20,
+                    transition: { duration: 0.24, ease: "easeInOut" },
+                  }}
+                  transition={{ type: "spring", stiffness: 420, damping: 26 }}
+                  className="absolute bottom-8 right-8 z-50 pointer-events-auto"
+                >
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.94 }}
+                    onClick={() => setIsPromptMinimized(false)}
+                    className="relative group size-14 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white shadow-[0_8px_30px_rgba(37,99,235,0.45)] hover:shadow-[0_12px_36px_rgba(37,99,235,0.6)] border-2 border-white flex items-center justify-center transition-shadow cursor-pointer"
+                    aria-label="Expand AI search prompt"
+                    title="Open AI Candidate Search"
+                  >
+                    <Sparkles className="size-6 text-white group-hover:rotate-12 transition-transform duration-300" />
 
-                    <div className="flex items-center justify-between pt-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={loading}
-                        className="shrink-0 rounded-full size-10 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-                      >
-                        <UploadCloud className="size-5" />
-                      </Button>
-                      <Button
-                        onClick={() => void runMatch()}
-                        disabled={loading || (!fileUpload && jdInput.trim().length < 20)}
-                        className="rounded-full h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-sm"
-                      >
-                        {loading ? <Loader2 className="size-5 animate-spin" /> : "Analyze"}
-                      </Button>
-                    </div>
+                    {activeClarifications.length > 0 && (
+                      <span className="absolute -top-1 -right-1 size-5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center shadow-md animate-pulse border border-white">
+                        {activeClarifications.length}
+                      </span>
+                    )}
 
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                      className="hidden"
-                      onChange={(e) => setFileUpload(e.target.files?.[0] ?? null)}
-                    />
-                  </motion.div>
-                );
-              })()}
-            </div>
+                    {/* Tooltip on hover */}
+                    <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-full bg-slate-900/90 text-white text-xs font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-lg backdrop-blur-xs">
+                      Open AI Search {activeClarifications.length > 0 ? `(${activeClarifications.length} clarifications)` : ""}
+                    </span>
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
             {isCreateGroupOpen ? (
               <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4">
                 <div className="w-full max-w-xl rounded-xl border bg-white p-6 shadow-lg">

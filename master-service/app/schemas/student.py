@@ -570,6 +570,7 @@ class JDParsedConstraints(BaseModel):
     placement_filter: str = "placed_or_unplaced"
     placement_exception_roll_nos: list[str] = Field(default_factory=list)
     min_cgpa: float | None = None
+    max_cgpa: float | None = None
     allowed_branches: list[str] = Field(default_factory=list)
     gender_filter: str = "all_genders"
     gender_filter_raw: str | None = None
@@ -634,6 +635,8 @@ class FilterSummary(BaseModel):
     eligible_count: int = 0
     returned_count: int = 0
     rejected_min_cgpa: int = 0
+    rejected_max_cgpa: int = 0
+    rejected_no_skill_match: int = 0
     rejected_branch: int = 0
     rejected_gender: int = 0
     rejected_backlog: int = 0

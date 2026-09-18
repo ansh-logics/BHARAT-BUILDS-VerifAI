@@ -46,6 +46,7 @@ class JDAnalyzeResponse(BaseModel):
     placement_filter: PlacementFilter = "placed_or_unplaced"
     placement_exception_roll_nos: list[str] = Field(default_factory=list)
     min_cgpa: float | None = None
+    max_cgpa: float | None = None
     allowed_branches: list[str] = Field(default_factory=list)
     gender_filter: GenderFilter = "all_genders"
     gender_filter_raw: str | None = None

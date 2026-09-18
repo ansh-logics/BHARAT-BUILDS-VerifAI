@@ -124,6 +124,10 @@ def run_jd_matching(
             summary.rejected_min_cgpa += 1
             continue
 
+        if constraints.max_cgpa is not None and (student.cgpa is None or student.cgpa > constraints.max_cgpa):
+            summary.rejected_max_cgpa += 1
+            continue
+
         if allowed_branches and student_branch not in allowed_branches:
             summary.rejected_branch += 1
             continue
@@ -175,6 +179,11 @@ def run_jd_matching(
             student_skill_list,
             constraints,
         )
+
+        # Hard gate: if JD specifies required skills, only include candidates who match ≥1
+        if constraints.required_skills and not matched_skills:
+            summary.rejected_no_skill_match += 1
+            continue
 
         accepted.append(
             (

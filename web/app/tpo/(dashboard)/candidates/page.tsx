@@ -748,11 +748,13 @@ export default function TpoDashboardPage() {
                     <span>Total: <strong>{filters.total_considered}</strong></span>
                     <span>Eligible: <strong>{filters.eligible_count || filters.passed_filters}</strong></span>
                     <span>Returned: <strong>{filters.returned_count}</strong></span>
-                    <span>Rejected CGPA: <strong>{filters.rejected_min_cgpa}</strong></span>
-                    <span>Rejected Branch: <strong>{filters.rejected_branch}</strong></span>
-                    <span>Rejected Gender: <strong>{filters.rejected_gender}</strong></span>
-                    <span>Rejected Backlog: <strong>{filters.rejected_backlog}</strong></span>
-                    <span>Rejected Placement: <strong>{filters.rejected_placement}</strong></span>
+                    {filters.rejected_min_cgpa > 0 && <span className="text-rose-600">↓CGPA: <strong>{filters.rejected_min_cgpa}</strong></span>}
+                    {(filters.rejected_max_cgpa ?? 0) > 0 && <span className="text-rose-600">↑CGPA: <strong>{filters.rejected_max_cgpa}</strong></span>}
+                    {(filters.rejected_no_skill_match ?? 0) > 0 && <span className="text-amber-600">No skill match: <strong>{filters.rejected_no_skill_match}</strong></span>}
+                    {filters.rejected_branch > 0 && <span>Branch: <strong>{filters.rejected_branch}</strong></span>}
+                    {filters.rejected_gender > 0 && <span>Gender: <strong>{filters.rejected_gender}</strong></span>}
+                    {filters.rejected_backlog > 0 && <span>Backlog: <strong>{filters.rejected_backlog}</strong></span>}
+                    {filters.rejected_placement > 0 && <span>Placement: <strong>{filters.rejected_placement}</strong></span>}
                   </div>
                 ) : (
                   <span>Run JD analyze to see filter summary.</span>
@@ -764,7 +766,14 @@ export default function TpoDashboardPage() {
                   {[
                     parsedJD.target_student_count ? `Target ${parsedJD.target_student_count}` : null,
                     parsedJD.job_title ? `Role ${parsedJD.job_title}` : null,
-                    parsedJD.min_cgpa !== null ? `Min CGPA ${parsedJD.min_cgpa}` : null,
+                    parsedJD.min_cgpa !== null && parsedJD.max_cgpa !== null
+                      ? `CGPA ${parsedJD.min_cgpa}–${parsedJD.max_cgpa}`
+                      : parsedJD.min_cgpa !== null
+                        ? `Min CGPA ${parsedJD.min_cgpa}`
+                        : parsedJD.max_cgpa !== null
+                          ? `Max CGPA ${parsedJD.max_cgpa}`
+                          : null,
+                    parsedJD.required_skills.length ? `Skills: ${parsedJD.required_skills.slice(0, 5).join(", ")}${parsedJD.required_skills.length > 5 ? "…" : ""}` : null,
                     parsedJD.exclude_active_backlogs ? "No active backlogs" : "Backlog: allowed",
                     parsedJD.placement_filter === "unplaced_only" ? "Placement: unplaced only" : "Placement: placed + unplaced",
                     parsedJD.allowed_branches.length ? `Branches ${parsedJD.allowed_branches.join(", ")}` : null,

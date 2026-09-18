@@ -33,17 +33,29 @@ RULES:
 - Generate jd_summary as a concise 2-4 sentence summary of the role and constraints.
 - Return canonical lowercase skill and trait tokens wherever possible.
 - Extract TPO constraints when present:
-  - target_student_count: numeric count requested (e.g. "give me 50 students")
+  - target_student_count: numeric count requested (e.g. "give me 50 students", "find 5 students")
   - exclude_active_backlogs: true for statements like "no back", "without backlog"
   - placement_filter: "unplaced_only" if text says not placed / unplaced only; else "placed_or_unplaced"
   - placement_exception_roll_nos: explicit roll numbers allowed as exceptions
-  - min_cgpa: numeric threshold if present
+  - min_cgpa: numeric lower bound for CGPA (e.g. "above 7", "min 6.5", "5-7 cgpa" → 5, "not less than 5" → 5)
+  - max_cgpa: numeric upper bound for CGPA when a range or ceiling is given (e.g. "5-7 cgpa" → 7, "below 8" → 8, "not more than 7" → 7, "cgpa between 5 and 7" → 7)
   - allowed_branches: branch list if constraints mention branches
+- CGPA range handling: when the text says "5-7 cgpa", "cgpa between 5 and 7", "cgpa 5 to 7",
+  "not more than 7", "not less than 5", "strictly 5 to 7" — extract BOTH min_cgpa AND max_cgpa.
+- Domain keyword expansion: when a domain keyword is used instead of explicit skills, expand it:
+  - "webdev", "web development", "web developer" → add ["html", "css", "javascript", "react"] to required_skills
+  - "fullstack", "full stack", "full-stack" → add ["html", "css", "javascript", "react", "node.js"] to required_skills
+  - "frontend", "front end", "front-end" → add ["html", "css", "javascript", "react"] to required_skills
+  - "backend", "back end", "back-end" → add ["node.js", "sql", "rest api"] to required_skills
+  - "ml", "machine learning" → add ["python", "machine learning", "numpy", "pandas"] to required_skills
+  - "data science", "data analyst" → add ["python", "sql", "statistics"] to required_skills
+  - "android" → add ["android", "kotlin", "java"] to required_skills
+  - "ios" → add ["swift", "ios"] to required_skills
 - Gender constraints:
-  - "only girls", "female only", "women only", "for women" -> gender_filter="women_only"
-  - "only boys", "male only", "men only", "for men" -> gender_filter="men_only"
-  - no restriction / mixed / any gender -> gender_filter="all_genders"
-  - any custom/non-binary-specific condition -> gender_filter="custom_text" and preserve phrase in gender_filter_raw
+  - "only girls", "female only", "women only", "for women" → gender_filter="women_only"
+  - "only boys", "male only", "men only", "for men" → gender_filter="men_only"
+  - no restriction / mixed / any gender → gender_filter="all_genders"
+  - any custom/non-binary-specific condition → gender_filter="custom_text" and preserve phrase in gender_filter_raw
 - Branch-family inference:
   - For phrases like "CSE related", infer allowed_branches as ["cse","it","aiml","ds"] unless explicitly contradicted.
   - Preserve original branch phrase in branch_constraint_raw when inference is used.
@@ -80,6 +92,7 @@ Return exactly this schema:
   "placement_filter": "unplaced_only | placed_or_unplaced",
   "placement_exception_roll_nos": ["string"],
   "min_cgpa": "number | null",
+  "max_cgpa": "number | null",
   "allowed_branches": ["string"],
   "gender_filter": "women_only | men_only | all_genders | custom_text",
   "gender_filter_raw": "string | null",
@@ -150,10 +163,51 @@ TARGET_COUNT_PATTERNS = (
     re.compile(r"\b(?:need|find|give|require|looking\s*for)\s+(\d{1,4})\s+(?:students?|candidates?)\b", re.IGNORECASE),
     re.compile(r"\b(\d{1,4})\s+(?:students?|candidates?)\s+(?:needed|required)\b", re.IGNORECASE),
 )
-CGPA_PATTERNS = (
-    re.compile(r"\bcgpa\s*(?:>=|>|at\s*least|min(?:imum)?\s*)\s*(\d(?:\.\d+)?)\b", re.IGNORECASE),
-    re.compile(r"\b(?:min(?:imum)?\s*)?(\d(?:\.\d+)?)\s*cgpa\b", re.IGNORECASE),
+
+# Pattern: "5-7 cgpa", "cgpa 5 to 7", "cgpa between 5 and 7" → extracts (min, max)
+CGPA_RANGE_PATTERN = re.compile(
+    r"\b(\d(?:\.\d+)?)\s*[-–to]+\s*(\d(?:\.\d+)?)\s*cgpa\b"
+    r"|\bcgpa\s+(?:between\s+)?(\d(?:\.\d+)?)\s+(?:and|to|-)\s+(\d(?:\.\d+)?)\b",
+    re.IGNORECASE,
 )
+# Pattern: "min cgpa 6", "cgpa >= 7", "cgpa above 5"
+CGPA_MIN_PATTERNS = (
+    re.compile(r"\bcgpa\s*(?:>=|>|at\s*least|min(?:imum)?\s*)[\s:]*(\d(?:\.\d+)?)\b", re.IGNORECASE),
+    re.compile(r"\b(?:min(?:imum)?\s*)?(\d(?:\.\d+)?)\s*cgpa\b", re.IGNORECASE),
+    re.compile(r"\bcgpa\s+(?:of\s+)?(?:at\s+least|minimum|min)\s+(\d(?:\.\d+)?)\b", re.IGNORECASE),
+    re.compile(r"\bnot\s+less\s+than\s+(\d(?:\.\d+)?)\s*cgpa\b", re.IGNORECASE),
+)
+# Pattern: "max cgpa 7", "cgpa <= 7", "cgpa below 7", "not more than 7 cgpa"
+CGPA_MAX_PATTERNS = (
+    re.compile(r"\bcgpa\s*(?:<=|<|at\s*most|max(?:imum)?\s*)[\s:]*(\d(?:\.\d+)?)\b", re.IGNORECASE),
+    re.compile(r"\bnot\s+more\s+than\s+(\d(?:\.\d+)?)\s*cgpa\b", re.IGNORECASE),
+    re.compile(r"\bcgpa\s+(?:below|under|at\s+most|max(?:imum)?)\s+(\d(?:\.\d+)?)\b", re.IGNORECASE),
+    re.compile(r"\bmax(?:imum)?\s*cgpa\s+(?:of\s+)?(\d(?:\.\d+)?)\b", re.IGNORECASE),
+)
+
+# Domain keyword → canonical skill expansion (applied post-LLM as a safety net)
+DOMAIN_SKILL_EXPANSION: dict[str, list[str]] = {
+    "webdev": ["html", "css", "javascript", "react"],
+    "web development": ["html", "css", "javascript", "react"],
+    "web developer": ["html", "css", "javascript", "react"],
+    "web dev": ["html", "css", "javascript", "react"],
+    "fullstack": ["html", "css", "javascript", "react", "node.js"],
+    "full stack": ["html", "css", "javascript", "react", "node.js"],
+    "full-stack": ["html", "css", "javascript", "react", "node.js"],
+    "full stack developer": ["html", "css", "javascript", "react", "node.js"],
+    "frontend": ["html", "css", "javascript", "react"],
+    "front end": ["html", "css", "javascript", "react"],
+    "front-end": ["html", "css", "javascript", "react"],
+    "backend": ["node.js", "sql", "rest api"],
+    "back end": ["node.js", "sql", "rest api"],
+    "back-end": ["node.js", "sql", "rest api"],
+    "machine learning": ["python", "machine learning", "numpy", "pandas"],
+    "ml": ["python", "machine learning", "numpy", "pandas"],
+    "data science": ["python", "sql", "statistics"],
+    "data analyst": ["python", "sql", "statistics"],
+    "android": ["android", "kotlin", "java"],
+    "ios": ["swift", "ios"],
+}
 
 
 def _normalize_token(value: str) -> str:
@@ -278,8 +332,31 @@ def _extract_target_student_count_from_text(jd_text: str) -> int | None:
     return None
 
 
+def _extract_cgpa_range_from_text(jd_text: str) -> tuple[float | None, float | None]:
+    """Extract (min_cgpa, max_cgpa) from range expressions like '5-7 cgpa', 'cgpa 5 to 7'."""
+    match = CGPA_RANGE_PATTERN.search(jd_text)
+    if match:
+        groups = match.groups()
+        # groups: (min1, max1, min2, max2) from alternation
+        if groups[0] is not None and groups[1] is not None:
+            try:
+                lo, hi = float(groups[0]), float(groups[1])
+                if 0 <= lo <= 10 and 0 <= hi <= 10:
+                    return (min(lo, hi), max(lo, hi))
+            except ValueError:
+                pass
+        if groups[2] is not None and groups[3] is not None:
+            try:
+                lo, hi = float(groups[2]), float(groups[3])
+                if 0 <= lo <= 10 and 0 <= hi <= 10:
+                    return (min(lo, hi), max(lo, hi))
+            except ValueError:
+                pass
+    return None, None
+
+
 def _extract_min_cgpa_from_text(jd_text: str) -> float | None:
-    for pattern in CGPA_PATTERNS:
+    for pattern in CGPA_MIN_PATTERNS:
         match = pattern.search(jd_text)
         if match:
             try:
@@ -289,6 +366,33 @@ def _extract_min_cgpa_from_text(jd_text: str) -> float | None:
             if 0 <= value <= 10:
                 return value
     return None
+
+
+def _extract_max_cgpa_from_text(jd_text: str) -> float | None:
+    for pattern in CGPA_MAX_PATTERNS:
+        match = pattern.search(jd_text)
+        if match:
+            try:
+                value = float(match.group(1))
+            except ValueError:
+                continue
+            if 0 <= value <= 10:
+                return value
+    return None
+
+
+def _expand_domain_skills(required_skills: list[str], jd_text: str) -> list[str]:
+    """If a domain keyword appears in the text or existing skills, expand it into canonical skills."""
+    seen = {s.lower() for s in required_skills}
+    expanded = list(required_skills)
+    text_lower = jd_text.lower()
+    for domain_kw, skill_list in DOMAIN_SKILL_EXPANSION.items():
+        if domain_kw in text_lower or domain_kw in seen:
+            for skill in skill_list:
+                if skill not in seen:
+                    seen.add(skill)
+                    expanded.append(skill)
+    return expanded
 
 
 def _extract_backlog_policy_from_text(jd_text: str) -> bool | None:
@@ -332,10 +436,23 @@ def _apply_text_fallbacks(*, jd_text: str, payload: JDAnalyzeResponse) -> JDAnal
         inferred_count = _extract_target_student_count_from_text(jd_text)
         if inferred_count is not None:
             updates["target_student_count"] = inferred_count
-    if payload.min_cgpa is None:
-        inferred_cgpa = _extract_min_cgpa_from_text(jd_text)
-        if inferred_cgpa is not None:
-            updates["min_cgpa"] = inferred_cgpa
+
+    # CGPA: try range extraction first, then individual min/max
+    range_min, range_max = _extract_cgpa_range_from_text(jd_text)
+    if range_min is not None and payload.min_cgpa is None:
+        updates["min_cgpa"] = range_min
+    if range_max is not None and payload.max_cgpa is None:
+        updates["max_cgpa"] = range_max
+
+    # Fallback: individual min/max if range didn't fire
+    if range_min is None and payload.min_cgpa is None:
+        inferred_min = _extract_min_cgpa_from_text(jd_text)
+        if inferred_min is not None:
+            updates["min_cgpa"] = inferred_min
+    if range_max is None and payload.max_cgpa is None:
+        inferred_max = _extract_max_cgpa_from_text(jd_text)
+        if inferred_max is not None:
+            updates["max_cgpa"] = inferred_max
 
     backlog_policy = _extract_backlog_policy_from_text(jd_text)
     if backlog_policy is not None:
@@ -344,6 +461,12 @@ def _apply_text_fallbacks(*, jd_text: str, payload: JDAnalyzeResponse) -> JDAnal
     placement_filter = _extract_placement_filter_from_text(jd_text)
     if placement_filter is not None:
         updates["placement_filter"] = placement_filter
+
+    # Domain skill expansion: apply after LLM as a deterministic safety net
+    current_skills = list(updates.get("required_skills", payload.required_skills))
+    expanded = _expand_domain_skills(current_skills, jd_text)
+    if expanded != current_skills:
+        updates["required_skills"] = expanded
 
     if not updates:
         return payload
@@ -386,6 +509,10 @@ def _normalize_output(raw: dict[str, Any]) -> JDAnalyzeResponse:
     if min_cgpa is not None and (min_cgpa < 0 or min_cgpa > 10):
         min_cgpa = None
 
+    max_cgpa = _to_number(raw.get("max_cgpa"))
+    if max_cgpa is not None and (max_cgpa < 0 or max_cgpa > 10):
+        max_cgpa = None
+
     branch_constraint_raw = _normalize_branch_phrase(raw.get("branch_constraint_raw"))
     allowed_branches = _normalize_branches(raw.get("allowed_branches"))
     allowed_branches, branch_inference_reason = _apply_branch_inference(
@@ -422,6 +549,7 @@ def _normalize_output(raw: dict[str, Any]) -> JDAnalyzeResponse:
         placement_filter=placement_filter,
         placement_exception_roll_nos=_normalize_roll_numbers(raw.get("placement_exception_roll_nos")),
         min_cgpa=min_cgpa,
+        max_cgpa=max_cgpa,
         allowed_branches=allowed_branches,
         gender_filter=cast(GenderFilter, gender_filter),
         gender_filter_raw=gender_filter_raw,

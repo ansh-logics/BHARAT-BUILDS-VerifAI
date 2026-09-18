@@ -486,6 +486,8 @@ export interface JDMatchFilters {
   eligible_count: number;
   returned_count: number;
   rejected_min_cgpa: number;
+  rejected_max_cgpa: number;
+  rejected_no_skill_match: number;
   rejected_branch: number;
   rejected_gender: number;
   rejected_backlog: number;
@@ -516,6 +518,7 @@ export interface JDParsedConstraints {
   placement_filter: PlacementFilter;
   placement_exception_roll_nos: string[];
   min_cgpa: number | null;
+  max_cgpa: number | null;
   allowed_branches: string[];
   gender_filter: GenderFilter;
   gender_filter_raw: string | null;

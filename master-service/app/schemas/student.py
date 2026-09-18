@@ -144,6 +144,20 @@ class AcademicsData(BaseModel):
     score: float = Field(default=0.0, ge=0, le=100)
 
 
+class ReadinessAction(BaseModel):
+    priority: Literal["high", "medium", "low"]
+    category: str
+    title: str
+    reason: str
+    next_step: str
+
+
+class PlacementReadiness(BaseModel):
+    score: float = Field(default=0.0, ge=0, le=100)
+    level: Literal["Starting", "Building", "Ready", "Strong"]
+    actions: list[ReadinessAction] = Field(default_factory=list)
+
+
 class StudentAnalyzeResponse(BaseModel):
     student: StudentData
     skills: list[str] = Field(default_factory=list)
@@ -192,6 +206,7 @@ class StudentProfileResponse(BaseModel):
     coding: CodingData
     academics: AcademicsData
     overall_score: float
+    readiness: PlacementReadiness
     resume_url: str | None = None
     resume_data: dict[str, Any] = Field(default_factory=dict)
     academic_data: dict[str, Any] = Field(default_factory=dict)

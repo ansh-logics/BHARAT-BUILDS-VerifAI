@@ -1610,7 +1610,11 @@ def login_tpo(payload: TpoLoginRequest) -> TpoAuthTokenResponse:
 
 
 @router.get("/profile/{id}", response_model=StudentProfileResponse)
-def get_student_profile(id: int, db: Session = Depends(get_db)) -> StudentProfileResponse:
+def get_student_profile(
+    id: int,
+    db: Session = Depends(get_db),
+    _tpo_user: str = Depends(get_current_tpo_user),
+) -> StudentProfileResponse:
     service = ProfileService(db)
     return service.get_profile(id)
 
@@ -1696,7 +1700,8 @@ def send_student_email(
     id: int,
     subject: str | None = Form(None),
     body: str | None = Form(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _tpo_user: str = Depends(get_current_tpo_user),
 ) -> dict:
     student = db.query(Student).filter(Student.id == id).one_or_none()
     if not student:

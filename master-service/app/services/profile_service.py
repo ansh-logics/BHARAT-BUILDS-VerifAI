@@ -31,6 +31,7 @@ from app.schemas.student import (
 )
 from app.services.auth_service import AuthService
 from app.services.master_service import normalize_skills
+from app.services.readiness_service import build_placement_readiness
 
 logger = logging.getLogger(__name__)
 PHONE_REGEX = re.compile(r"^[0-9+\-\s()]{7,20}$")
@@ -421,6 +422,18 @@ class ProfileService:
             .first()
         )
 
+        resume_url = latest_upload.resume_url if latest_upload else None
+        readiness = build_placement_readiness(
+            overall_score=profile.overall_score,
+            coding_score=profile.coding_score,
+            academic_score=profile.academic_score,
+            academic_verified=student.cgpa_verified,
+            skills=profile.skills or [],
+            resume_url=resume_url,
+            github_data=profile.github_data or {},
+            leetcode_data=profile.leetcode_data or {},
+        )
+
         return StudentProfileResponse(
             id=profile.id,
             student_id=student.id,
@@ -447,7 +460,8 @@ class ProfileService:
                 score=profile.academic_score,
             ),
             overall_score=profile.overall_score,
-            resume_url=latest_upload.resume_url if latest_upload else None,
+            readiness=readiness,
+            resume_url=resume_url,
             resume_data=profile.resume_data or {},
             academic_data=profile.academic_data or {},
             github_data=profile.github_data or {},
@@ -725,4 +739,3 @@ class ProfileService:
         self.db.commit()
         self.db.refresh(placement)
         return placement
-

@@ -138,6 +138,17 @@ export interface StudentProfileDetail {
     score: number;
   };
   overall_score: number;
+  readiness: {
+    score: number;
+    level: "Starting" | "Building" | "Ready" | "Strong";
+    actions: Array<{
+      priority: "high" | "medium" | "low";
+      category: string;
+      title: string;
+      reason: string;
+      next_step: string;
+    }>;
+  };
   resume_url?: string | null;
   resume_data: Record<string, unknown>;
   academic_data: Record<string, unknown>;

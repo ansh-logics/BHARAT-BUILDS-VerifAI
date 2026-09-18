@@ -111,6 +111,21 @@ class StudentAuthApiTests(unittest.TestCase):
         self.assertTrue(columns.roll_no.index)
         self.assertTrue(columns.roll_no.unique)
 
+    def test_profile_by_id_requires_tpo_authentication(self) -> None:
+        response = self.client.get("/student/profile/1")
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json()["detail"], "Not authenticated.")
+
+    def test_send_student_email_requires_tpo_authentication(self) -> None:
+        response = self.client.post(
+            "/student/1/send-email",
+            data={"subject": "Test", "body": "Test"},
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json()["detail"], "Not authenticated.")
+
 
 if __name__ == "__main__":
     unittest.main()

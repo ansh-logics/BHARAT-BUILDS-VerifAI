@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Loader2, Route } from "lucide-react";
 import { toast } from "sonner";
 
 import axios from "axios";
@@ -242,6 +242,60 @@ export default function ProfilePage() {
                 {profile.overall_score.toFixed(1)} <span className="text-xl text-slate-400 font-medium">/ 100</span>
               </div>
               <Progress value={profile.overall_score} className="h-2" />
+            </CardContent>
+          </Card>
+
+          <Card className={`md:col-span-2 overflow-hidden ${surfaceCardClass}`}>
+            <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-emerald-50 via-white to-sky-50 pb-5">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base text-slate-900">
+                    <Route className="size-4 text-emerald-600" />
+                    Placement readiness plan
+                  </CardTitle>
+                  <CardDescription className="mt-1 text-slate-600">
+                    Prioritized from your verified resume, coding, and academic evidence.
+                  </CardDescription>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-semibold tracking-tight text-slate-900">
+                    {profile.readiness.score.toFixed(1)}
+                  </div>
+                  <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                    <CheckCircle2 className="size-3.5" />
+                    {profile.readiness.level}
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="grid gap-3 pt-4 md:grid-cols-2">
+              {profile.readiness.actions.map((action, index) => (
+                <div key={`${action.category}-${action.title}`} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                        {index + 1}. {action.category}
+                      </p>
+                      <h3 className="mt-1 font-semibold text-slate-900">{action.title}</h3>
+                    </div>
+                    <span className={cn(
+                      "rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider",
+                      action.priority === "high"
+                        ? "bg-rose-100 text-rose-700"
+                        : action.priority === "medium"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700",
+                    )}>
+                      {action.priority}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm leading-5 text-slate-600">{action.reason}</p>
+                  <div className="mt-3 flex items-start gap-2 text-sm font-medium leading-5 text-slate-800">
+                    <ArrowUpRight className="mt-0.5 size-4 shrink-0 text-blue-600" />
+                    {action.next_step}
+                  </div>
+                </div>
+              ))}
             </CardContent>
           </Card>
 

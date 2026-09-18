@@ -408,8 +408,9 @@ class ProfileService:
             if marksheet_changed:
                 profile.academic_score = payload.academics.score
                 profile.academic_data = academic_data
-            profile.overall_score = payload.overall_score
-            profile.last_analyzed_at = datetime.now(UTC)
+            if sources:
+                profile.overall_score = payload.overall_score
+                profile.last_analyzed_at = datetime.now(UTC)
 
         has_file_metadata = bool((resume_data or {}).get("file_name") or (academic_data or {}).get("file_name"))
         if profile is not None and (resume_changed or marksheet_changed) and (payload.resume_url or payload.marksheet_url or has_file_metadata):

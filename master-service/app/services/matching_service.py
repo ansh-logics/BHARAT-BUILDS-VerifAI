@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from app.database.models import RawUpload, Student
 from app.schemas.student import FilterSummary, JDParsedConstraints, MatchCandidate, ScoreBreakdown
 from core_engine import calculate_candidate_score
+from core_engine.utils import match_resume_skills_to_jd, unique_normalized
 
 
 def _to_bool(value: Any) -> bool:
@@ -64,6 +65,25 @@ def _extract_status_flags(student: Student) -> tuple[bool, bool]:
     
     has_active_backlog = has_active_backlog or resume_backlog or academic_backlog
     return is_placed, has_active_backlog
+
+
+def build_skill_explanation(
+    candidate_skills: list[str],
+    constraints: JDParsedConstraints,
+) -> tuple[list[str], list[str], list[str]]:
+    required = unique_normalized(constraints.required_skills)
+    preferred = unique_normalized(
+        [*constraints.preferred_skills, *constraints.tools_and_technologies]
+    )
+    matched_required, _ = match_resume_skills_to_jd(candidate_skills, required)
+    matched_preferred, _ = match_resume_skills_to_jd(candidate_skills, preferred)
+    matched_required_set = set(matched_required)
+    matched_preferred_set = set(matched_preferred)
+
+    matched = list(dict.fromkeys([*matched_required, *matched_preferred]))
+    missing_required = [skill for skill in required if skill not in matched_required_set]
+    missing_preferred = [skill for skill in preferred if skill not in matched_preferred_set]
+    return matched, missing_required, missing_preferred
 
 
 def run_jd_matching(
@@ -145,6 +165,10 @@ def run_jd_matching(
             jd=jd_data,
         )
         total = float(engine_scores["final_score"])
+        matched_skills, missing_required, missing_preferred = build_skill_explanation(
+            student_skill_list,
+            constraints,
+        )
 
         accepted.append(
             (
@@ -162,6 +186,9 @@ def run_jd_matching(
                     coding_persona=profile.coding_persona if profile is not None else None,
                     is_placed=is_placed,
                     has_active_backlog=has_backlog,
+                    matched_skills=matched_skills,
+                    missing_required_skills=missing_required,
+                    missing_preferred_skills=missing_preferred,
                     score_breakdown=ScoreBreakdown(
                         resume=float(engine_scores["resume_score"]),
                         github=float(engine_scores["github_score"]),

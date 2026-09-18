@@ -456,6 +456,9 @@ export interface JDMatchCandidate {
   coding_persona: string | null;
   is_placed: boolean;
   has_active_backlog: boolean;
+  matched_skills: string[];
+  missing_required_skills: string[];
+  missing_preferred_skills: string[];
   score_breakdown: JDMatchScoreBreakdown;
 }
 

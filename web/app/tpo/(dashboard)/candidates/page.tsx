@@ -4,7 +4,7 @@ import * as React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { CheckCircle2, FileText, Loader2, Search, Target, Trophy, UploadCloud, Users, X, Download, Zap } from "lucide-react";
+import { AlertTriangle, CheckCircle2, FileText, Loader2, Search, Target, Trophy, UploadCloud, Users, X, Download, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -54,6 +54,9 @@ type UICandidate = {
   resumeUrl: string | null;
   isPlaced: boolean;
   hasBacklog: boolean;
+  matchedSkills: string[];
+  missingRequiredSkills: string[];
+  missingPreferredSkills: string[];
   score: {
     resume: number;
     github: number;
@@ -110,6 +113,9 @@ function toCandidate(raw: JDMatchCandidate): UICandidate {
     resumeUrl: raw.resume_url,
     isPlaced: raw.is_placed,
     hasBacklog: raw.has_active_backlog,
+    matchedSkills: raw.matched_skills ?? [],
+    missingRequiredSkills: raw.missing_required_skills ?? [],
+    missingPreferredSkills: raw.missing_preferred_skills ?? [],
     score: {
       resume: raw.score_breakdown.resume,
       github: raw.score_breakdown.github,
@@ -838,13 +844,41 @@ export default function TpoDashboardPage() {
                                         </Button>
                                       ) : null}
                                     </div>
-                                    <div className="space-y-3">
-                                      <h4 className="text-sm font-semibold text-slate-900">Resume Link</h4>
+                                    <div className="space-y-4">
+                                      <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                                          <CheckCircle2 className="size-4 text-emerald-600" />
+                                          Match evidence
+                                        </h4>
+                                        <div className="mt-2 flex flex-wrap gap-1.5">
+                                          {c.matchedSkills.length ? c.matchedSkills.map((skill) => (
+                                            <Badge key={skill} className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                                              {skill}
+                                            </Badge>
+                                          )) : <span className="text-xs text-slate-500">No direct JD skill evidence found.</span>}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                                          <AlertTriangle className="size-4 text-amber-600" />
+                                          Required skill gaps
+                                        </h4>
+                                        <div className="mt-2 flex flex-wrap gap-1.5">
+                                          {c.missingRequiredSkills.length ? c.missingRequiredSkills.map((skill) => (
+                                            <Badge key={skill} className="border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-50">
+                                              {skill}
+                                            </Badge>
+                                          )) : <span className="text-xs font-medium text-emerald-700">All required skills covered</span>}
+                                        </div>
+                                      </div>
+                                      {c.missingPreferredSkills.length ? (
+                                        <p className="text-xs leading-5 text-slate-500">
+                                          Preferred gaps: {c.missingPreferredSkills.join(", ")}
+                                        </p>
+                                      ) : null}
                                       {c.resumeUrl ? (
-                                        <a href={c.resumeUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline break-all">{c.resumeUrl}</a>
-                                      ) : (
-                                        <div className="text-sm text-slate-400">No resume URL available</div>
-                                      )}
+                                        <a href={c.resumeUrl} target="_blank" rel="noreferrer" className="inline-flex text-sm font-medium text-blue-600 underline underline-offset-4">Open verified resume</a>
+                                      ) : null}
                                     </div>
                                     <CandidateFullDetails candidateId={c.id} />
                                   </div>

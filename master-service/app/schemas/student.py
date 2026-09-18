@@ -617,6 +617,7 @@ class MatchCandidate(BaseModel):
     coding_persona: str | None = None
     is_placed: bool = False
     has_active_backlog: bool = False
+    is_demo: bool = False
     matched_skills: list[str] = Field(default_factory=list)
     missing_required_skills: list[str] = Field(default_factory=list)
     missing_preferred_skills: list[str] = Field(default_factory=list)

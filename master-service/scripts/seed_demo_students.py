@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from datetime import UTC, datetime
 import hashlib
 import os
@@ -8,10 +9,8 @@ import re
 
 import requests
 
-from sqlalchemy import text
-
 from app.database.database import SessionLocal
-from app.database.models import RawUpload, Student, StudentProfile
+from app.database.models import PlacementRecord, RawUpload, Student, StudentProfile
 
 
 def _testmail_namespace() -> str:
@@ -29,7 +28,10 @@ def _deterministic_testmail_email(entry: dict, index: int) -> str:
 
 
 def _resolve_seed_email(entry: dict, index: int) -> str:
-    # API-first (namespace reachability check), fallback to deterministic format.
+    if not os.getenv("TESTMAIL_NAMESPACE") and not os.getenv("TESTMAIL_API_KEY"):
+        return str(entry["email"])
+
+    # Opt-in Testmail routing for teams that want to validate demo delivery.
     namespace = _testmail_namespace()
     deterministic = _deterministic_testmail_email(entry, index)
     api_key = (os.getenv("TESTMAIL_API_KEY") or "").strip()
@@ -44,6 +46,10 @@ def _resolve_seed_email(entry: dict, index: int) -> str:
     except Exception:
         pass
     return deterministic
+
+
+def _demo_roll_no(entry: dict) -> str:
+    return f"DEMO-{str(entry['roll_no']).strip()}"
 
 DEMO_STUDENTS: list[dict] = [
     {
@@ -1774,43 +1780,54 @@ def _build_leetcode_data(entry: dict, rng: random.Random) -> dict:
     }
 
 
-def reset_demo_tables() -> None:
+def delete_demo_students() -> int:
+    demo_roll_numbers = [_demo_roll_no(entry) for entry in DEMO_STUDENTS]
     with SessionLocal() as db:
-        db.execute(text("TRUNCATE TABLE raw_uploads, student_profiles, students RESTART IDENTITY CASCADE"))
+        students = db.query(Student).filter(Student.roll_no.in_(demo_roll_numbers)).all()
+        for student in students:
+            db.delete(student)
         db.commit()
+        return len(students)
 
 
-
-def upsert_demo_students() -> None:
+def upsert_demo_students(*, count: int) -> int:
     now = datetime.now(UTC)
+    selected_students = DEMO_STUDENTS[:count]
+    demo_resume_url = os.getenv(
+        "DEMO_RESUME_URL",
+        "https://web-six-pi-61.vercel.app/demo/verifai-demo-resume.pdf",
+    ).strip()
     with SessionLocal() as db:
-        for index, entry in enumerate(DEMO_STUDENTS):
+        for index, entry in enumerate(selected_students):
             rng = _deterministic_rng(entry)
             generated_email = _resolve_seed_email(entry, index)
-            student = db.query(Student).filter(Student.roll_no == entry["roll_no"]).one_or_none()
+            demo_roll_no = _demo_roll_no(entry)
+            student = db.query(Student).filter(Student.roll_no == demo_roll_no).one_or_none()
             if student is None:
                 student = Student(
                     name=entry["name"],
                     email=generated_email,
-                    roll_no=entry["roll_no"],
+                    roll_no=demo_roll_no,
                     password_hash="",
                     phone=entry["phone"],
                     branch=entry["branch"],
                     cgpa=entry["cgpa"],
                     gender=entry["gender"],
                     cgpa_verified=True,
+                    has_active_backlog=entry["has_active_backlog"],
                 )
                 db.add(student)
                 db.flush()
             else:
                 student.name = entry["name"]
                 student.email = generated_email
-                student.roll_no = entry["roll_no"]
+                student.roll_no = demo_roll_no
                 student.phone = entry["phone"]
                 student.branch = entry["branch"]
                 student.cgpa = entry["cgpa"]
                 student.gender = entry["gender"]
                 student.cgpa_verified = True
+                student.has_active_backlog = entry["has_active_backlog"]
 
             profile = db.query(StudentProfile).filter(StudentProfile.student_id == student.id).one_or_none()
             resume_data = _build_resume_data(entry, rng)
@@ -1849,19 +1866,59 @@ def upsert_demo_students() -> None:
             if raw_upload is None:
                 raw_upload = RawUpload(
                     student_id=student.id,
-                    resume_url=entry["resume_url"],
+                    resume_url=demo_resume_url,
                     marksheet_url=None,
                 )
                 db.add(raw_upload)
             else:
-                raw_upload.resume_url = entry["resume_url"]
+                raw_upload.resume_url = demo_resume_url
                 raw_upload.marksheet_url = None
                 raw_upload.uploaded_at = now
 
+            if entry["is_placed"]:
+                placement = (
+                    db.query(PlacementRecord)
+                    .filter(
+                        PlacementRecord.student_id == student.id,
+                        PlacementRecord.is_active.is_(True),
+                    )
+                    .one_or_none()
+                )
+                if placement is None:
+                    db.add(
+                        PlacementRecord(
+                            student_id=student.id,
+                            company_name="DemoCorp",
+                            offer_type="job",
+                            pay_amount=650000,
+                            notes="Synthetic placement record for the VeriAI demo cohort.",
+                            is_active=True,
+                        )
+                    )
+
         db.commit()
+    return len(selected_students)
 
 
 if __name__ == "__main__":
-    reset_demo_tables()
-    upsert_demo_students()
-    print(f"Seeded {len(DEMO_STUDENTS)} demo students.")
+    parser = argparse.ArgumentParser(description="Safely seed an isolated VeriAI demo cohort.")
+    parser.add_argument(
+        "--count",
+        type=int,
+        default=24,
+        help=f"Number of synthetic students to upsert (1-{len(DEMO_STUDENTS)}; default: 24).",
+    )
+    parser.add_argument(
+        "--reset-demo",
+        action="store_true",
+        help="Delete only known synthetic demo students before seeding. Real students are never truncated.",
+    )
+    args = parser.parse_args()
+    if args.count < 1 or args.count > len(DEMO_STUDENTS):
+        parser.error(f"--count must be between 1 and {len(DEMO_STUDENTS)}")
+
+    if args.reset_demo:
+        deleted = delete_demo_students()
+        print(f"Deleted {deleted} existing demo students.")
+    seeded = upsert_demo_students(count=args.count)
+    print(f"Upserted {seeded} demo students without modifying real student records.")

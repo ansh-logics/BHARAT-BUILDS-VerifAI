@@ -178,6 +178,21 @@ Run `python -m scripts.migrate_cloudinary_resumes_to_s3` once after switching an
 existing deployment to S3. The migration is idempotent and only processes
 remaining `res.cloudinary.com` records.
 
+## Safe demo cohort
+
+Populate a clearly labeled synthetic cohort without changing real student records:
+
+```bash
+python -m scripts.seed_demo_students --count 24
+```
+
+The command is idempotent and uses `*.demo@verifai.dev` identities. To rebuild
+only the synthetic cohort, use `--reset-demo`; unlike the legacy seeder, this
+never truncates student tables. Demo candidates carry a `Demo` badge in JD match
+results and use the public synthetic resume at
+`/demo/verifai-demo-resume.pdf`. Set `TESTMAIL_NAMESPACE` only when demo inbox
+delivery through Testmail is intentionally required.
+
 ## TPO dashboard auth
 
 - Login using `POST /student/tpo/login` to receive a bearer token.

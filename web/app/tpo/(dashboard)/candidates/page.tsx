@@ -54,6 +54,7 @@ type UICandidate = {
   resumeUrl: string | null;
   isPlaced: boolean;
   hasBacklog: boolean;
+  isDemo: boolean;
   matchedSkills: string[];
   missingRequiredSkills: string[];
   missingPreferredSkills: string[];
@@ -113,6 +114,7 @@ function toCandidate(raw: JDMatchCandidate): UICandidate {
     resumeUrl: raw.resume_url,
     isPlaced: raw.is_placed,
     hasBacklog: raw.has_active_backlog,
+    isDemo: raw.is_demo ?? false,
     matchedSkills: raw.matched_skills ?? [],
     missingRequiredSkills: raw.missing_required_skills ?? [],
     missingPreferredSkills: raw.missing_preferred_skills ?? [],
@@ -796,7 +798,7 @@ export default function TpoDashboardPage() {
                         return (
                           <React.Fragment key={c.key}>
                             <TableRow className="border-slate-50 hover:bg-slate-50/50 transition-colors group cursor-pointer" onClick={() => setExpandedKey(expandedKey === c.key ? null : c.key)}>
-                              <TableCell className="px-6 py-4"><div className="flex items-center gap-3">{isTop ? <div className={cn("size-2 rounded-full", tone.dot)} /> : <div className="size-2" />}<span className="font-medium text-slate-900">{c.name}</span></div></TableCell>
+                              <TableCell className="px-6 py-4"><div className="flex items-center gap-3">{isTop ? <div className={cn("size-2 rounded-full", tone.dot)} /> : <div className="size-2" />}<span className="font-medium text-slate-900">{c.name}</span>{c.isDemo ? <Badge variant="outline" className="border-sky-200 bg-sky-50 text-[10px] font-bold uppercase tracking-wider text-sky-700">Demo</Badge> : null}</div></TableCell>
                               <TableCell className="px-6 py-4 text-slate-600">{c.branch}</TableCell>
                               <TableCell className="px-6 py-4 text-right tabular-nums text-slate-600">{c.cgpa.toFixed(2)}</TableCell>
                               <TableCell className="px-6 py-4 text-right"><Badge variant="outline" className={cn("rounded-full px-2.5 py-0.5 font-medium border-transparent", tone.pill)}>{c.matchScore.toFixed(1)}%</Badge></TableCell>

@@ -186,6 +186,7 @@ def run_jd_matching(
                     coding_persona=profile.coding_persona if profile is not None else None,
                     is_placed=is_placed,
                     has_active_backlog=has_backlog,
+                    is_demo=student.email.lower().endswith(".demo@verifai.dev"),
                     matched_skills=matched_skills,
                     missing_required_skills=missing_required,
                     missing_preferred_skills=missing_preferred,

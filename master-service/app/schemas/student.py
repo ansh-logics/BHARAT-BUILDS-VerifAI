@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 GenderType = str
 
@@ -151,6 +151,13 @@ class StudentAnalyzeResponse(BaseModel):
     academics: AcademicsData = Field(default_factory=AcademicsData)
     overall_score: float = Field(default=0.0, ge=0, le=100)
     resume_url: str | None = None
+
+    @model_validator(mode="after")
+    def use_analyzed_academics_as_source_of_truth(self) -> Self:
+        if self.academics.cgpa is not None:
+            self.student.cgpa = self.academics.cgpa
+        self.student.cgpa_verified = self.academics.verified
+        return self
 
 
 class StudentProfileCreate(StudentAnalyzeResponse):
@@ -615,4 +622,3 @@ class JDMatchResponse(BaseModel):
     jd: JDParsedConstraints
     filters: FilterSummary
     candidates: list[MatchCandidate] = Field(default_factory=list)
-

@@ -483,8 +483,12 @@ export default function DashboardPage() {
         return;
       }
 
-      const cgpaValue =
+      const enteredCgpa =
         formData.cgpa.trim().length > 0 ? Number(formData.cgpa.trim()) : null;
+      const analyzedCgpa = effectiveAnalysis.academics.cgpa;
+      const validEnteredCgpa =
+        enteredCgpa !== null && !Number.isNaN(enteredCgpa) ? enteredCgpa : null;
+      const cgpaValue = analyzedCgpa ?? validEnteredCgpa;
       const payload: StudentProfilePayload = {
         student: {
           name: resolvedName,
@@ -492,14 +496,14 @@ export default function DashboardPage() {
           roll_no: resolvedRollNo.toUpperCase(),
           phone: resolvedPhone,
           branch: resolvedBranch,
-          cgpa: Number.isNaN(cgpaValue) ? null : cgpaValue,
+          cgpa: cgpaValue,
           gender: effectiveAnalysis.student.gender ?? "other",
           cgpa_verified: effectiveAnalysis.academics.verified,
         },
         skills: effectiveAnalysis.skills,
         coding: effectiveAnalysis.coding,
         academics: {
-          cgpa: Number.isNaN(cgpaValue) ? null : cgpaValue,
+          cgpa: cgpaValue,
           verified: effectiveAnalysis.academics.verified,
           score: effectiveAnalysis.academics.score,
         },
@@ -517,6 +521,9 @@ export default function DashboardPage() {
       };
 
       const response = await saveProfile(payload, token);
+      if (cgpaValue !== null) {
+        setFormData((prev) => ({ ...prev, cgpa: String(cgpaValue) }));
+      }
       if (draftStudentId !== null) {
         clearDashboardDraft(draftStudentId);
         setAuth(token, draftStudentId, payload.student.email, payload.student.roll_no);

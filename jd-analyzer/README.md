@@ -6,7 +6,7 @@ Standalone JD analyzer microservice that parses raw job descriptions into strict
 
 - FastAPI microservice with dedicated parser service
 - Strict JSON extraction contract for combined JD + TPO selection constraints
-- Groq integration using `llama-3.3-70b-versatile`
+- Groq integration using `openai/gpt-oss-120b`
 - Built-in local frontend for manual testing (`GET /`)
 - Health endpoint for orchestration checks (`GET /health`)
 
@@ -48,7 +48,7 @@ export GROQ_API_KEY="your_groq_api_key"
 Optional overrides:
 
 ```bash
-export GROQ_MODEL="llama-3.3-70b-versatile"
+export GROQ_MODEL="openai/gpt-oss-120b"
 export GROQ_TIMEOUT_SECONDS="30"
 ```
 

@@ -55,7 +55,7 @@ How storage is used in matching:
 LLM provider flow:
 - Service: jd-analyzer
 - Model call: Groq chat completion
-- Model target: llama-3.3-70b-versatile
+- Model target: openai/gpt-oss-120b
 - temperature = 0
 - response_format = {"type":"json_object"}
 - Defensive parsing + strict JSON normalization happens after LLM output.
@@ -286,4 +286,3 @@ Main open gaps are:
 - canonical status data modeling (placement/backlog),
 - richer similarity logic,
 - and production-grade audit/performance hardening.
-

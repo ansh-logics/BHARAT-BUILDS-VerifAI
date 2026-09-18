@@ -7,7 +7,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Settings:
     groq_api_key: str
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"
     request_timeout_seconds: float = 30.0
 
 
@@ -16,7 +16,7 @@ def get_settings() -> Settings:
     if not api_key:
         raise RuntimeError("GROQ_API_KEY is not configured.")
 
-    model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile").strip() or "llama-3.3-70b-versatile"
+    model = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b").strip() or "openai/gpt-oss-120b"
 
     timeout_raw = os.getenv("GROQ_TIMEOUT_SECONDS", "30").strip()
     try:

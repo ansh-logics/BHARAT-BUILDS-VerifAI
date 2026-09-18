@@ -12,7 +12,7 @@ sequenceDiagram
     participant MCH as MatchingService
     participant CE as CoreEngine
     participant DB as Postgres
-    participant CL as Cloudinary
+    participant S3 as PrivateAmazonS3
   end
 
   box DownstreamAnalyzers
@@ -23,7 +23,7 @@ sequenceDiagram
   end
 
   rect rgb(245, 245, 245)
-    Note over U,CL: Flow A - Student Analyze and Persist Profile
+    Note over U,S3: Flow A - Student Analyze and Persist Profile
     U->>W: Upload resume + marksheet + branch + usernames
     W->>API: POST /student/analyze
     API->>MS: analyze_student_profile(...)
@@ -39,8 +39,9 @@ sequenceDiagram
     end
     MS->>CE: score_existing_analysis(resume,coding,marksheet)
     CE-->>MS: resume/github/leetcode/academic/final scores
-    MS->>CL: upload_resume_to_cloudinary(resume_file)
-    CL-->>MS: resume_url
+    MS->>S3: PutObject encrypted resume using EC2 role
+    S3-->>MS: Stored object
+    MS-->>MS: Build stable signed VeriAI resume URL
     MS-->>API: normalized student/profile payload
     API->>DB: Save students + student_profiles + raw_uploads via profile service
     DB-->>API: persisted row ids
@@ -48,7 +49,7 @@ sequenceDiagram
   end
 
   rect rgb(245, 245, 245)
-    Note over U,CL: Flow B - JD Match and Candidate Ranking
+    Note over U,S3: Flow B - JD Match and Candidate Ranking
     U->>W: Enter JD text and/or upload JD file
     W->>API: POST /student/match-jd
     API->>API: Parse multipart or JSON, merge jd sources

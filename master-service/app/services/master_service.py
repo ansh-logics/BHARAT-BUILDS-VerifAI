@@ -8,7 +8,7 @@ import httpx
 
 from app.config import get_settings
 from core_engine.service import score_existing_analysis
-from app.services.cloudinary_service import upload_resume_to_cloudinary
+from app.services.storage_service import upload_resume_to_s3
 from app.services.downstream import (
     DEFAULT_HEADERS,
     call_coding_analyzer,
@@ -203,10 +203,11 @@ async def analyze_student_profile(
         )
 
     resume_data["branch"] = branch.strip()
-    resume_url = await upload_resume_to_cloudinary(
+    resume_url = await upload_resume_to_s3(
         settings=settings,
         resume_bytes=resume_file,
         filename=resume_filename,
+        content_type=resume_content_type,
     )
     normalized = normalize_master_output(
         resume=resume_data,
@@ -261,10 +262,11 @@ async def analyze_student_profile_incremental(
                 raise ValueError(f"Resume analyzer failed: {r_err or 'unknown error'}")
             r_data["branch"] = branch.strip()
             resume_data = r_data
-            resume_url = await upload_resume_to_cloudinary(
+            resume_url = await upload_resume_to_s3(
                 settings=settings,
                 resume_bytes=resume_file,
                 filename=resume_filename,
+                content_type=resume_content_type,
             )
 
         if marksheet_changed:

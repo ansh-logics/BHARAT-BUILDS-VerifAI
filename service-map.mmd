@@ -12,7 +12,7 @@ flowchart LR
   marksheetAnalyzer[MarksheetAnalyzer]
   jdAnalyzer[JDAnalyzer]
   postgres[(PostgresDB)]
-  cloudinary[(CloudinaryStorage)]
+  s3[(Private Amazon S3)]
 
   user --> web
   user --> master
@@ -27,7 +27,8 @@ flowchart LR
 
   masterService --> downstream
   masterService -->|"score_existing_analysis"| coreEngine
-  masterService -->|"resume upload"| cloudinary
+  masterService -->|"encrypted resume upload"| s3
+  master -->|"signed resume download redirect"| s3
   masterService -->|"persist normalized payload through API/service layer"| postgres
 
   downstream -->|"POST /analyze-resume"| resumeAnalyzer

@@ -148,10 +148,12 @@ Response includes:
 | `DB_MAX_OVERFLOW` | `20` |
 | `DB_ECHO_SQL` | `false` |
 | `LOG_LEVEL` | `INFO` |
-| `CLOUDINARY_CLOUD_NAME` | `` |
-| `CLOUDINARY_API_KEY` | `` |
-| `CLOUDINARY_API_SECRET` | `` |
-| `CLOUDINARY_RESUME_FOLDER` | `verifAI/resumes` |
+| `AWS_REGION` | `us-east-1` |
+| `S3_RESUME_BUCKET` | `` |
+| `S3_RESUME_PREFIX` | `resumes` |
+| `S3_PRESIGNED_EXPIRY_SECONDS` | `300` |
+| `PUBLIC_API_BASE_URL` | `http://localhost:8080` |
+| `STORAGE_SIGNING_SECRET` | Falls back to `AUTH_JWT_SECRET` |
 | `AUTH_JWT_SECRET` | `change-me-master-service-jwt-secret` |
 | `AUTH_JWT_ALGORITHM` | `HS256` |
 | `AUTH_ACCESS_TOKEN_EXPIRE_MINUTES` | `120` |
@@ -160,6 +162,12 @@ Response includes:
 | `TPO_ACCESS_TOKEN_EXPIRE_MINUTES` | `240` |
 | `TPO_ALLOW_API_KEY_FALLBACK` | `true` |
 | `TPO_API_KEY` | `default-insecure-tpo-key` |
+
+Resume objects are private in S3. The EC2 workload uses an instance role for
+`s3:GetObject` and `s3:PutObject`; no AWS access keys are stored in `.env`.
+Run `python -m scripts.migrate_cloudinary_resumes_to_s3` once after switching an
+existing deployment to S3. The migration is idempotent and only processes
+remaining `res.cloudinary.com` records.
 
 ## TPO dashboard auth
 

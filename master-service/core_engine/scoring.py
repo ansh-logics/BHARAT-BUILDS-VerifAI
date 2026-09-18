@@ -12,6 +12,7 @@ from core_engine.utils import (
     extract_github_tech,
     extract_jd_skills,
     extract_resume_skills,
+    match_resume_skills_to_jd,
     round_score,
     safe_float,
     safe_int,
@@ -41,13 +42,13 @@ def score_resume_jd_match(
             "jd_missing": True,
         }
 
-    resume_set = set(resume_skills)
-    matched = sorted(skill for skill in jd_skills if skill in resume_set)
+    matched, match_evidence = match_resume_skills_to_jd(resume_skills, jd_skills)
     score = (len(matched) / len(jd_skills)) * 40.0
     return round_score(score), {
         "resume_skills": resume_skills,
         "jd_skills": jd_skills,
         "matched_skills": matched,
+        "match_evidence": match_evidence,
         "jd_missing": False,
     }
 

@@ -12,7 +12,7 @@ class IncrementalAnalysisTests(unittest.IsolatedAsyncioTestCase):
             patch("app.services.master_service.call_resume_analyzer", new=AsyncMock(return_value=({"name": "New", "branch": "CSE"}, None))),
             patch("app.services.master_service.call_marksheet_analyzer", new=AsyncMock()) as marksheet_mock,
             patch("app.services.master_service.call_coding_analyzer", new=AsyncMock()) as coding_mock,
-            patch("app.services.master_service.upload_resume_to_cloudinary", new=AsyncMock(return_value="https://cdn/new.pdf")),
+            patch("app.services.master_service.upload_resume_to_s3", new=AsyncMock(return_value="https://cdn/new.pdf")),
             patch(
                 "app.services.master_service.normalize_master_output",
                 side_effect=lambda **kwargs: kwargs,
@@ -91,7 +91,7 @@ class IncrementalAnalysisTests(unittest.IsolatedAsyncioTestCase):
             patch("app.services.master_service.call_resume_analyzer", new=AsyncMock(return_value=({"name": "New Resume"}, None))),
             patch("app.services.master_service.call_marksheet_analyzer", new=AsyncMock(return_value=({"candidate": {"name": "New Candidate", "class_name": "X", "roll_no": "R1"}}, None))),
             patch("app.services.master_service.call_coding_analyzer", new=AsyncMock()) as coding_mock,
-            patch("app.services.master_service.upload_resume_to_cloudinary", new=AsyncMock(return_value="https://cdn/new.pdf")),
+            patch("app.services.master_service.upload_resume_to_s3", new=AsyncMock(return_value="https://cdn/new.pdf")),
             patch(
                 "app.services.master_service.normalize_master_output",
                 side_effect=lambda **kwargs: kwargs,

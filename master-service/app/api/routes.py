@@ -21,7 +21,7 @@ from app.services.downstream import (
 )
 from app.services.master_service import has_candidate_basic_details
 from app.services.payload_builder import build_master_report
-from app.services.cloudinary_service import upload_resume_to_cloudinary
+from app.services.storage_service import upload_resume_to_s3
 
 router = APIRouter()
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).resolve().parents[1] / "templates"))
@@ -224,13 +224,14 @@ async def analyze_profile(
     resume_url: str | None = None
     if resume_out.data is not None:
         try:
-            resume_url = await upload_resume_to_cloudinary(
+            resume_url = await upload_resume_to_s3(
                 settings=settings,
                 resume_bytes=contents,
                 filename=file.filename or "resume.bin",
+                content_type=file.content_type,
             )
         except Exception:
-            logger.exception("Cloudinary upload failed for resume filename=%s", file.filename or "resume.bin")
+            logger.exception("S3 upload failed for resume filename=%s", file.filename or "resume.bin")
 
     resume_ok = resume_out.data is not None
     if coding_out.skipped:

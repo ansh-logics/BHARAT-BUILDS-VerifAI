@@ -21,10 +21,12 @@ class Settings(BaseSettings):
     db_max_overflow: int = 20
     db_echo_sql: bool = False
     log_level: str = "INFO"
-    cloudinary_cloud_name: str = ""
-    cloudinary_api_key: str = ""
-    cloudinary_api_secret: str = ""
-    cloudinary_resume_folder: str = "verifAI/resumes"
+    aws_region: str = "us-east-1"
+    s3_resume_bucket: str = ""
+    s3_resume_prefix: str = "resumes"
+    s3_presigned_expiry_seconds: int = 300
+    public_api_base_url: str = "http://localhost:8080"
+    storage_signing_secret: str = ""
     auth_jwt_secret: str = "change-me-master-service-jwt-secret"
     auth_jwt_algorithm: str = "HS256"
     auth_access_token_expire_minutes: int = 120
@@ -64,6 +66,10 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_allowed_origins.split(",") if origin.strip()]
+
+    @property
+    def effective_storage_signing_secret(self) -> str:
+        return self.storage_signing_secret or self.auth_jwt_secret
 
 
 @lru_cache

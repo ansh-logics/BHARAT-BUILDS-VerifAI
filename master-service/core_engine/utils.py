@@ -58,6 +58,43 @@ COMMON_TECH_TERMS = {
     "algorithms",
 }
 
+# Broad JD capabilities should be backed by concrete resume evidence. Specific
+# requirements such as "React" still require that exact canonical skill.
+SKILL_FAMILIES: dict[str, set[str]] = {
+    "web development": {
+        "html", "css", "javascript", "typescript", "react", "nextjs",
+        "nodejs", "express", "fastapi", "django", "flask", "tailwind",
+    },
+    "frontend development": {
+        "html", "css", "javascript", "typescript", "react", "nextjs", "tailwind",
+    },
+    "backend development": {
+        "python", "java", "javascript", "typescript", "nodejs", "express",
+        "fastapi", "django", "flask", "sql", "postgresql", "mysql", "mongodb", "redis",
+    },
+    "database management": {"sql", "postgresql", "mysql", "mongodb", "redis"},
+    "cloud computing": {"aws", "azure", "gcp"},
+    "devops": {"docker", "kubernetes", "aws", "azure", "gcp", "git", "github"},
+    "machine learning": {"machine learning", "deep learning", "python"},
+    "data structures and algorithms": {"data structures", "algorithms"},
+}
+
+SKILL_FAMILY_ALIASES = {
+    "web": "web development",
+    "web developer": "web development",
+    "frontend": "frontend development",
+    "front end": "frontend development",
+    "backend": "backend development",
+    "back end": "backend development",
+    "databases": "database management",
+    "database": "database management",
+    "cloud": "cloud computing",
+    "cloud platforms": "cloud computing",
+    "ci/cd": "devops",
+    "ml": "machine learning",
+    "dsa": "data structures and algorithms",
+}
+
 
 def as_dict(value: Any) -> dict[str, Any]:
     if value is None:
@@ -176,6 +213,32 @@ def extract_resume_skills(resume: Mapping[str, Any] | None) -> list[str]:
         skills.extend(list_from_any(exp_data.get("tech_stack")))
 
     return unique_normalized(skills)
+
+
+def match_resume_skills_to_jd(
+    resume_skills: Iterable[Any],
+    jd_skills: Iterable[Any],
+) -> tuple[list[str], dict[str, list[str]]]:
+    candidate_set = set(unique_normalized(resume_skills))
+    requirements = unique_normalized(jd_skills)
+    matched: list[str] = []
+    evidence: dict[str, list[str]] = {}
+
+    for requirement in requirements:
+        direct = sorted(skill for skill in candidate_set if skill == requirement)
+        if direct:
+            matched.append(requirement)
+            evidence[requirement] = direct
+            continue
+
+        family_name = SKILL_FAMILY_ALIASES.get(requirement, requirement)
+        family = SKILL_FAMILIES.get(family_name)
+        family_evidence = sorted(candidate_set.intersection(family or set()))
+        if family_evidence:
+            matched.append(requirement)
+            evidence[requirement] = family_evidence
+
+    return matched, evidence
 
 
 def extract_jd_skills(jd: Mapping[str, Any] | str | None) -> list[str]:

@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router as analyzer_router
+from app.api.storage import router as storage_router
 from app.api.student import router as student_router
 from search_engine.routes import router as search_router
 from app.config import get_settings
@@ -37,5 +38,5 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 app.include_router(analyzer_router)
 app.include_router(student_router)
 app.include_router(search_router)
-
+app.include_router(storage_router)
 

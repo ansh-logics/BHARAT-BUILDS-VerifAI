@@ -146,6 +146,9 @@ export default function ProfilePage() {
   const resumeUrl =
     profile.resume_url ||
     (typeof profile.resume_data?.url === "string" ? profile.resume_data.url : null);
+  const resumePreviewUrl = resumeUrl
+    ? `/api/resume-preview?url=${encodeURIComponent(resumeUrl)}`
+    : null;
   const lastAnalyzedLabel = new Date(profile.last_analyzed_at).toLocaleString();
   const topSkills = profile.skills.slice(0, 8);
 
@@ -429,10 +432,10 @@ export default function ProfilePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-1 flex-col space-y-4 overflow-hidden pt-4">
-              {resumeUrl ? (
+              {resumeUrl && resumePreviewUrl ? (
                 <>
                   <ResumePdfViewer
-                    url={resumeUrl}
+                    url={resumePreviewUrl}
                     className="flex-1 min-h-0 rounded-xl border border-slate-200 overflow-hidden"
                   />
                   <a

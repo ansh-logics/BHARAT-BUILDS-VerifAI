@@ -11,448 +11,158 @@
 
 ---
 
-## 1. System Overview
+## 1. Problem Statement
 
-VerifAI is an enterprise placement intelligence platform built for universities, Training and Placement Officers (TPOs), and technical recruiters. It replaces self-reported student resumes with cryptographically validated, multi-source profiles audited against official academic transcripts, live developer registries, and natural language job criteria.
+University campus recruitment suffers from a critical ground-truth failure across academic credentials, technical skills, and candidate shortlisting:
 
-### Problem Addressed
-- **Resume Exaggeration and Fraud**: Students routinely inflate self-reported CGPAs, list unverified project competencies, or claim proficiency in technologies they have never used.
-- **Manual Backlog and Transcript Auditing**: University placement offices spend hundreds of administrative hours manually cross-checking university marksheets, active arrears, and minimum academic eligibility.
-- **Fragile Keyword Shortlisting**: Conventional Applicant Tracking Systems (ATS) rely on exact keyword matches, failing on domain concepts (e.g., matching "webdev" to React and JavaScript) and unable to interpret complex natural language recruiter constraints (e.g., bounded CGPA ranges, branch clusters, or backlog policies).
-
-### Solution Architecture
-VerifAI deploys a distributed microservices pipeline:
-1. Ingests original transcripts and establishes marksheet computed CGPA as the supreme academic authority.
-2. Encrypts documents with AES-256 Server-Side Encryption in private AWS S3 vaults and distributes time-bound HMAC tokens.
-3. Audits live GitHub and LeetCode activity in real time to establish verifiable developer aptitude.
-4. Uses Groq LLM inference with structured few-shot schemas and deterministic safety nets to parse conversational recruiter queries.
-5. Implements a bounded range filtering engine with zero-match disqualification and proactive AI clarification questions.
+1. **Resume Inflation and Fraud**: Self-reported resumes contain unverified CGPAs, fabricated skill lists, and exaggerated project contributions that Applicant Tracking Systems (ATS) cannot detect.
+2. **Administrative Audit Overhead**: Training and Placement Officers (TPOs) spend hundreds of manual hours cross-verifying semester marksheets, grade cards, active backlogs, and eligibility thresholds across thousands of applicants.
+3. **Keyword-Only Shortlisting Inefficiencies**: Standard recruitment software relies on literal keyword queries. When recruiters search for domain capabilities (e.g., "webdev" or "AIML") or specify strict multi-bound constraints (e.g., "5 to 7 CGPA only"), conventional systems fail, returning ineligible or completely unqualified candidates.
 
 ---
 
-## 2. Live Infrastructure and Endpoints
+## 2. The VerifAI Solution
 
-- **Web Application (Vercel)**: [https://web-six-pi-61.vercel.app/](https://web-six-pi-61.vercel.app/)
-- **AWS API Gateway**: `https://upur1tv9bg.execute-api.us-east-1.amazonaws.com`
-- **EC2 Compute**: AWS `t3.large` instance running Dockerized microservice containers (`us-east-1`)
-- **Document Storage**: Private AWS S3 Bucket with AES-256 Server-Side Encryption (`aws:kms` / `AES256`)
+VerifAI is an enterprise placement intelligence platform that establishes an automated, single source of truth for candidate evaluation and shortlisting:
+
+1. **Ground-Truth Academic Verification**: Official university marksheets are parsed directly to compute cumulative CGPA, semester SGPA history, and active arrears by course code. Marksheet data permanently overrides self-reported resume values.
+2. **Multi-Source Developer Auditing**: Real-time integration with GitHub and LeetCode APIs validates actual coding velocity, language breadth, repository authenticity, and problem-solving metrics.
+3. **Conversational AI Candidate Matching**: Powered by Groq-accelerated LLM inference and a deterministic safety-net engine, the system interprets conversational TPO criteria, enforces strict bounded CGPA ranges, performs domain skill taxonomy expansion, and presents proactive clarification suggestions for underspecified requirements.
+4. **Enterprise Document Security**: Resumes and marksheets are stored with AES-256 Server-Side Encryption in private AWS S3 vaults, accessible exclusively via time-bound, cryptographically signed HMAC tokens.
 
 ---
 
-## 3. Microservices Topology
+## 3. The End-to-End Process
 
-The platform consists of six containerized services communicating over internal Docker networking:
+VerifAI operates through a five-stage verification and matching pipeline:
 
-```mermaid
-graph TD
-    Client["Browser / Client"] --> Vercel["Next.js 14 Frontend\n(Vercel)"]
-    Vercel --> Proxy["/api/resume-preview\n(Same-Origin PDF Proxy)"]
-    Vercel --> APIGW["AWS API Gateway\n(TLS / Ingress)"]
-    APIGW --> Master["master-service:8080\n(FastAPI Orchestrator)"]
-
-    Master <--> Postgres[("PostgreSQL 16\nDatabase")]
-    Master <--> S3[("AWS S3\nEncrypted Vault")]
-
-    Master --> Resume["resume-analyzer:8080\n(spaCy NLP / ATS)"]
-    Master --> Coding["coding-analyzer:8080\n(GitHub / LeetCode)"]
-    Master --> Marksheet["marksheet-analyzer:8080\n(Tabular Transcript Parser)"]
-    Master --> JD["jd-analyzer:8080\n(Groq LLM Parser)"]
-
-    Coding --> GitHubAPI["GitHub REST / GraphQL API"]
-    Coding --> LeetCodeAPI["LeetCode GraphQL API"]
-    JD --> GroqAPI["Groq Cloud API\n(Llama-3 / GPT-OSS)"]
+```
+[Student Onboarding]
+       │
+       ▼
+[Stage 1: Document Ingestion & Private S3 Storage]
+       │ Upload PDF resume + marksheet to private S3 with AES-256 encryption
+       ▼
+[Stage 2: Multi-Source Parallel Audit]
+       ├─► resume-analyzer: spaCy NLP entity extraction + ATS scoring
+       ├─► coding-analyzer: Live GitHub commit velocity + LeetCode problem audit
+       └─► marksheet-analyzer: Tabular transcript parsing + backlog detection
+       ▼
+[Stage 3: Ground-Truth Reconciliation & Scoring]
+       │ Marksheet computed CGPA overrides self-reported numbers
+       │ Placement Readiness Index (PRI) computed across all sources
+       │ Merged profile persisted to PostgreSQL 16
+       ▼
+[Stage 4: Conversational TPO Search & AI Matching]
+       │ Recruiter prompt parsed by Groq LLM with structured few-shot schemas
+       │ Bounded CGPA range resolved ([min_cgpa, max_cgpa])
+       │ Domain terms expanded ("webdev" -> React, JavaScript, HTML, CSS)
+       │ Zero-match skill gate disqualifies non-matching candidates
+       │ AI clarification suggestions surfaced for ambiguous criteria
+       ▼
+[Stage 5: Placement Operations & Round Tracking]
+       │ Interactive shortlist review with score breakdown
+       │ Placement group batching and multi-round interview progression
+       │ Async email notification pipeline and CSV export
 ```
 
-### Service Map and Responsibilities
+### Stage 1: Document Ingestion and Private Storage
+The student uploads their resume and official university marksheet alongside their GitHub and LeetCode usernames. The orchestrator streams the files directly to a private AWS S3 bucket under segregated prefixes (`resumes/`, `marksheets/`) using AES-256 Server-Side Encryption.
 
-| Service | Host Port | Technology Stack | Core Responsibilities |
-| :--- | :--- | :--- | :--- |
-| **`web`** | `28084` / `3000` | Next.js 14, React 18, Tailwind CSS, Framer Motion | Student portfolio portal, TPO candidate shortlist explorer, AI insight chips, same-origin PDF proxy |
-| **`master-service`** | `28082` / `8080` | FastAPI, SQLAlchemy 2.0, Pydantic v2, Boto3, HTTPX | Central API gateway, parallel task orchestration, HMAC token generation, candidate scoring and filtering |
-| **`jd-analyzer`** | `28085` / `8080` | FastAPI, Groq Python SDK, Pydantic v2 | LLM constraint extraction, CGPA bound resolution, domain keyword expansion, clarification generation |
-| **`resume-analyzer`** | `28081` / `8080` | FastAPI, spaCy `en_core_web_sm`, PyMuPDF, pdfplumber | PDF text extraction, entity extraction (skills, tools, education), ATS compatibility scoring |
-| **`coding-analyzer`** | `28080` / `8080` | FastAPI, HTTPX, BeautifulSoup4, GraphQL | Real-time GitHub commit history and LeetCode problem breakdown auditing; coding persona detection |
-| **`marksheet-analyzer`** | `28083` / `8080` | FastAPI, Tabula-py, pdfplumber | University semester marksheet parsing, SGPA calculation, active backlog detection by course code |
-| **`postgres`** | `15432` / `5432` | PostgreSQL 16 Alpine, Alembic | ACID relational store for student records, profiles, placement groups, round progression, and mail jobs |
+### Stage 2: Parallel Multi-Source Audit
+The master orchestrator dispatches parallel asynchronous HTTP requests to specialized microservices:
+- **`resume-analyzer`**: Extracts structured technical skills, project titles, work experience, and calculates ATS formatting compatibility.
+- **`coding-analyzer`**: Queries GitHub REST/GraphQL APIs for 30-day commit streaks, repository ownership, and language distribution, and queries LeetCode GraphQL APIs for problem difficulty breakdowns (Easy, Medium, Hard) and contest ratings.
+- **`marksheet-analyzer`**: Extracts tabular semester tables from university marksheets, computes the true cumulative CGPA, and identifies active backlogs by subject code.
 
----
+### Stage 3: Ground-Truth Reconciliation and Scoring
+If a marksheet is provided, its computed CGPA and backlog statuses are established as the supreme authority, overriding any conflicting figures found in the resume. The scoring engine calculates the candidate's Placement Readiness Index (PRI, 0 to 100) using weighted multi-source scoring (Resume 40%, GitHub 20%, LeetCode 20%, Academics 20%). The consolidated profile is persisted to PostgreSQL, and time-bound HMAC tokens are issued for document previews.
 
-## 4. Entity-Relationship Database Schema
+### Stage 4: Conversational Search and Candidate Matching
+When a placement officer submits a natural language query (e.g., *"Find 5 students with 5-7 cgpa not more then or less then this also they should have the speciality in webdev"*):
+1. **Constraint Extraction**: The `jd-analyzer` service queries Groq LLM using few-shot structured JSON schemas to extract parameters.
+2. **Bounded Range Enforcement**: Strict lower and upper CGPA bounds (`min_cgpa=5.0`, `max_cgpa=7.0`) are parsed and enforced by the database query filter.
+3. **Domain Taxonomy Expansion**: Generic domain terms are expanded into canonical skill sets (e.g., `webdev` expands to `["html", "css", "javascript", "react"]`).
+4. **Zero-Match Disqualification**: Candidates who match zero required skills are disqualified before rank scoring.
+5. **AI Clarification Suggestions**: If criteria such as branch or backlog policy are unstated, the AI formulates 1 to 3 targeted clarification questions rendered directly in the dashboard UI.
 
-The database is built on PostgreSQL 16 with SQLAlchemy 2.0 and Alembic migrations.
-
-```mermaid
-erDiagram
-    STUDENTS ||--o| STUDENT_PROFILES : "has one profile"
-    STUDENTS ||--o{ RAW_UPLOADS : "has many uploads"
-    STUDENTS ||--o{ PLACEMENT_RECORDS : "has many placements"
-    STUDENTS ||--o{ TPO_ANALYSIS_GROUP_MEMBERS : "enrolled in groups"
-    STUDENTS ||--o{ TPO_GROUP_ROUND_MEMBERS : "participates in rounds"
-
-    TPO_ANALYSIS_GROUPS ||--o{ TPO_ANALYSIS_GROUP_MEMBERS : "contains"
-    TPO_ANALYSIS_GROUPS ||--o{ TPO_GROUP_ROUNDS : "tracks rounds"
-    TPO_ANALYSIS_GROUPS ||--o{ TPO_MAIL_JOBS : "dispatches emails"
-
-    TPO_GROUP_ROUNDS ||--o{ TPO_GROUP_ROUND_MEMBERS : "round candidates"
-
-    STUDENTS {
-        int id PK
-        string name
-        string email UK
-        string roll_no UK
-        string password_hash
-        string phone
-        string branch
-        float cgpa
-        string gender
-        boolean cgpa_verified
-        boolean has_active_backlog
-        datetime created_at
-    }
-
-    STUDENT_PROFILES {
-        int id PK
-        int student_id FK,UK
-        string github_username UK
-        string leetcode_username UK
-        text_array skills
-        string coding_persona
-        float coding_score
-        float academic_score
-        float overall_score
-        jsonb github_data
-        jsonb leetcode_data
-        jsonb resume_data
-        jsonb academic_data
-        json skills_json
-        datetime last_analyzed_at
-    }
-
-    RAW_UPLOADS {
-        int id PK
-        int student_id FK
-        string resume_url
-        string marksheet_url
-        datetime uploaded_at
-    }
-
-    PLACEMENT_RECORDS {
-        int id PK
-        int student_id FK
-        string company_name
-        string offer_type
-        float pay_amount
-        text notes
-        boolean is_active
-        datetime created_at
-        datetime updated_at
-    }
-
-    TPO_ANALYSIS_GROUPS {
-        int id PK
-        string title
-        text jd_summary
-        string company_name
-        string role_type
-        string pay_or_stipend
-        string duration
-        text bond_details
-        json jd_topics
-        json jd_key_points
-        string interview_timezone
-        int total_rounds
-        int current_round_no
-        string round_state
-        string created_by
-        datetime created_at
-    }
-
-    TPO_ANALYSIS_GROUP_MEMBERS {
-        int id PK
-        int group_id FK
-        int student_id FK
-        datetime added_at
-    }
-
-    TPO_GROUP_ROUNDS {
-        int id PK
-        int group_id FK
-        int round_no
-        string status
-        datetime finalized_at
-        datetime created_at
-        datetime updated_at
-    }
-
-    TPO_GROUP_ROUND_MEMBERS {
-        int id PK
-        int round_id FK
-        int student_id FK
-        string status
-        datetime created_at
-        datetime updated_at
-    }
-
-    TPO_MAIL_JOBS {
-        int id PK
-        int group_id FK
-        string requested_by
-        string mail_type
-        int round_no
-        string outcome
-        string status
-        int total_recipients
-        int processed_count
-        int success_count
-        int failure_count
-        text last_error
-        datetime started_at
-        datetime finished_at
-        datetime created_at
-        datetime updated_at
-    }
-
-    TPO_SETTINGS {
-        int id PK
-        string tpo_username UK
-        string display_name
-        string contact_number
-        string institute_name
-        string sender_name
-        string reply_to_email
-        string default_timezone
-        boolean stale_group_reminder_enabled
-        boolean daily_queue_summary_enabled
-        boolean placement_update_confirmation_enabled
-        string tpo_password_hash
-        datetime created_at
-        datetime updated_at
-    }
-```
+### Stage 5: Placement Operations and Round Progression
+TPOs can inspect score breakdowns, review candidate resumes through a same-origin PDF proxy, export shortlists to CSV, group candidates into Placement Groups, track multi-round interview stages, and trigger automated email notification jobs.
 
 ---
 
-## 5. System Workflows and Sequence Diagrams
+## 4. Live Deployments
 
-### Sequence 1: Student Analysis and Multi-Source Ingestion Pipeline
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Student
-    participant Web as Next.js Web App
-    participant Master as master-service
-    participant S3 as AWS S3 Storage
-    participant Resume as resume-analyzer
-    participant Coding as coding-analyzer
-    participant Marksheet as marksheet-analyzer
-    participant DB as PostgreSQL 16
-
-    Student->>Web: Upload Resume (PDF) + Marksheet (PDF) + GitHub/LeetCode handles
-    Web->>Master: POST /analyze-profile (multipart/form-data)
-    
-    par Document Ingestion
-        Master->>S3: Upload Resume (AES-256 SSE, prefix: resumes/)
-        S3-->>Master: Resume S3 Key
-        Master->>S3: Upload Marksheet (AES-256 SSE, prefix: marksheets/)
-        S3-->>Master: Marksheet S3 Key
-    end
-
-    par Parallel Asynchronous Analysis
-        Master->>Resume: POST /analyze (resume bytes)
-        Resume-->>Master: Parsed Skills, Experience, Projects, ATS Score
-        
-        Master->>Coding: POST /analyze (GitHub / LeetCode usernames)
-        Coding-->>Master: Live Commit History, Problem Counts, Coding Persona
-        
-        Master->>Marksheet: POST /analyze (marksheet bytes)
-        Marksheet-->>Master: Verified CGPA, Semester Breakdown, Backlog List
-    end
-
-    Note over Master: Marksheet CGPA overrides self-reported resume values
-    Master->>Master: Compute Placement Readiness Index and Component Scores
-    
-    Master->>DB: Upsert Student, StudentProfile, and RawUpload records
-    DB-->>Master: Transaction Committed
-    
-    Master->>Master: Sign time-bound HMAC access tokens for document URLs
-    Master-->>Web: JSON Profile Report (verified credentials, scores, tokens)
-    Web-->>Student: Render Verified Profile Dashboard
-```
+- **Production Web Application**: [https://web-six-pi-61.vercel.app/](https://web-six-pi-61.vercel.app/)
+- **AWS API Gateway Endpoint**: `https://upur1tv9bg.execute-api.us-east-1.amazonaws.com`
+- **AWS EC2 Compute**: `t3.large` instance running containerized microservices in `us-east-1`
+- **Private Document Vault**: Private AWS S3 bucket with AES-256 Server-Side Encryption
 
 ---
 
-### Sequence 2: TPO Conversational Search and Candidate Matching Engine
+## 5. Technical Documentation Index
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor TPO as Placement Officer (TPO)
-    participant Web as Next.js Web App
-    participant Master as master-service
-    participant JD as jd-analyzer
-    participant Groq as Groq Cloud LLM
-    participant DB as PostgreSQL 16
+Detailed architectural specifications, schemas, and service-level documentation are maintained in their respective dedicated files:
 
-    TPO->>Web: Enter query (e.g. "Find 5 students with 5-7 CGPA and webdev skills")
-    Web->>Master: POST /student/match-jd { jd_text, top_k }
-    
-    Master->>JD: POST /analyze { jd_text }
-    JD->>Groq: Few-shot structured prompt with JSON response format
-    Groq-->>JD: Parsed constraints JSON
-    
-    Note over JD: Fallback Engine resolves bounded CGPA window [5.0, 7.0]
-    Note over JD: Domain expansion: "webdev" -> [html, css, javascript, react]
-    Note over JD: Generate clarification questions for open criteria
-    
-    JD-->>Master: JDParsedConstraints (min_cgpa, max_cgpa, required_skills, clarifications)
-    
-    Master->>DB: Query students with joined profiles and placement records
-    DB-->>Master: Candidate dataset
-    
-    loop Filtering and Scoring per Candidate
-        Master->>Master: Check min_cgpa and max_cgpa bounds
-        Master->>Master: Check branch, gender, and active backlog rules
-        Master->>Master: Evaluate Skill Gate (reject if 0 required skills matched)
-        Master->>Master: Calculate weighted score (Resume, Coding, Academics)
-    end
-    
-    Master->>Master: Sort candidates by score descending and truncate to target count
-    Master->>Master: Generate secure HMAC tokens for candidate resume URLs
-    Master-->>Web: JDMatchResponse (candidates, filter summary, clarifications)
-    
-    Web-->>TPO: Display ranked candidate table with score breakdown and AI insight chips
-```
-
----
-
-## 6. Scoring and Ranking Formulation
-
-The placement readiness score ($S_{\text{final}} \in [0, 100]$) is computed through dynamic weighted evaluation:
-
-$$S_{\text{final}} = w_r \cdot S_{\text{resume}} + w_g \cdot S_{\text{github}} + w_l \cdot S_{\text{leetcode}} + w_a \cdot S_{\text{academics}}$$
-
-### Component Weights
-
-| Component | Weight | Evaluation Method |
+| Documentation | File Location | Description |
 | :--- | :--- | :--- |
-| **Resume Score ($S_{\text{resume}}$)** | $0.40$ | Direct token matching and skill family intersection against canonical requirements. |
-| **GitHub Score ($S_{\text{github}}$)** | $0.20$ | Audit of commit frequency (last 30 days), repository originality, and language spread. |
-| **LeetCode Score ($S_{\text{leetcode}}$)** | $0.20$ | Weighted problem difficulty distribution: $\text{Score} \propto 1 \cdot \text{Easy} + 3 \cdot \text{Medium} + 5 \cdot \text{Hard}$. |
-| **Academic Score ($S_{\text{academics}}$)** | $0.20$ | Normalized marksheet computed CGPA: $S_{\text{academics}} = \min(100, \frac{\text{CGPA}}{10} \cdot 100)$. |
-
-### Placement Readiness Index (PRI) Tiers
-- **Needs Focus**: $S_{\text{final}} < 40.0$
-- **Building**: $40.0 \le S_{\text{final}} < 70.0$
-- **Ready**: $70.0 \le S_{\text{final}} < 85.0$
-- **Exceptional**: $S_{\text{final}} \ge 85.0$
+| **System Architecture & Service Map** | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Microservice network topology, host ports, and cloud ingress architecture |
+| **Database Schema (DBML)** | [verifai-schema.dbml](verifai-schema.dbml) | Complete database definition, table structures, indices, and foreign key relations in DBML |
+| **Database ER Diagram** | [docs/ARCHITECTURE.md#2-database-schema-and-entity-relationships](docs/ARCHITECTURE.md#2-database-schema-and-entity-relationships) | Visual Entity-Relationship diagram across all 10 tables |
+| **Sequence Diagrams** | [docs/ARCHITECTURE.md#3-detailed-sequence-diagrams](docs/ARCHITECTURE.md#3-detailed-sequence-diagrams) | Step-by-step sequence diagrams for student ingestion and TPO search |
+| **Scoring Algorithm Formulation** | [docs/ARCHITECTURE.md#4-scoring-algorithm-formulation](docs/ARCHITECTURE.md#4-scoring-algorithm-formulation) | Mathematical formulas and weighting breakdowns for candidate ranking |
+| **Document Security & HMAC Tokens** | [docs/ARCHITECTURE.md#5-security-and-document-access-architecture](docs/ARCHITECTURE.md#5-security-and-document-access-architecture) | Private S3 document storage, cryptographic HMAC signing, and PDF proxy specs |
+| **Master Orchestrator Service** | [master-service/README.md](master-service/README.md) | FastAPI endpoints, schema mirrors, and orchestration logic |
+| **JD Analyzer Service** | [jd-analyzer/README.md](jd-analyzer/README.md) | Groq LLM prompt design, few-shot examples, and regex fallback engine |
+| **Resume Analyzer Service** | [resume-analyzer/README.md](resume-analyzer/README.md) | spaCy NLP extraction, PyMuPDF text parsing, and ATS scoring engine |
+| **Coding Analyzer Service** | [coding-analyzer/README.md](coding-analyzer/README.md) | GitHub REST/GraphQL and LeetCode GraphQL auditor |
+| **Marksheet Analyzer Service** | [marksheet-analyzer/README.md](marksheet-analyzer/README.md) | Tabula and pdfplumber semester marksheet table extraction |
+| **Web Frontend Service** | [web/README.md](web/README.md) | Next.js 14 App Router, component architecture, and client API bindings |
+| **TPO Matching Plan** | [docs/TPO_MATCHING_AND_JD_PLAN.md](docs/TPO_MATCHING_AND_JD_PLAN.md) | Recruiter matching criteria and ingestion specifications |
 
 ---
 
-## 7. Local Deployment and Development Setup
+## 6. Local Quickstart
 
-### System Prerequisites
-- Docker Engine 24.0+ and Docker Compose v2.20+
-- Node.js 20 LTS and npm 10+
+### Prerequisites
+- Docker and Docker Compose
+- Node.js 20 LTS and npm
 - Python 3.11+
 
-### Environment Configuration
-Create a `.env` configuration file in the project root:
-
-```ini
-# PostgreSQL Relational Database
-POSTGRES_DB=verifai
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_secure_password
-
-# Authentication & Security
-AUTH_JWT_SECRET=your_jwt_secret_key_minimum_32_characters
-STORAGE_SIGNING_SECRET=your_hmac_storage_signing_secret
-
-# AWS Cloud Credentials (EC2 IAM Instance Role preferred in production)
-AWS_DEFAULT_REGION=us-east-1
-S3_BUCKET_NAME=your-private-s3-bucket-name
-
-# Groq Cloud API
-GROQ_API_KEY=gsk_your_groq_api_key_here
-GROQ_MODEL=openai/gpt-oss-120b
-
-# Frontend Public API URL
-NEXT_PUBLIC_API_BASE_URL=http://localhost:28082
-```
-
-### Execution via Docker Compose
-
+### Running the Microservices
 ```bash
-# Start all seven services in development mode
-docker compose -f docker-compose.dev.yml up --build -d
+# 1. Clone the repository
+git clone https://github.com/ansh-logics/BHARAT-BUILDS-VerifAI.git
+cd BHARAT-BUILDS-VerifAI
 
-# Verify container health status
-docker compose -f docker-compose.dev.yml ps
+# 2. Configure environment variables
+cp .env.example .env
+
+# 3. Start all services in development mode
+docker compose -f docker-compose.dev.yml up --build -d
 ```
 
-Local service ports:
-- **Next.js Web Portal**: `http://localhost:3000`
-- **Master Orchestrator API**: `http://localhost:28082` (Swagger Docs: `/docs`)
-- **Resume Analyzer**: `http://localhost:18081`
-- **Coding Analyzer**: `http://localhost:18080`
-- **Marksheet Analyzer**: `http://localhost:18083`
-- **JD Analyzer**: `http://localhost:18085`
-- **PostgreSQL Database**: `localhost:15432`
+- Web Portal: `http://localhost:3000`
+- Master API & Swagger Docs: `http://localhost:28082/docs`
+- PostgreSQL: `localhost:15432`
 
 ---
 
-## 8. Test Execution and Quality Verification
-
-Automated test suites guarantee zero regression across internal logic and external interfaces:
+## 7. Automated Verification & Testing
 
 ```bash
-# 1. Run Master Service test suite (50 tests: auth, S3 encryption, HMAC tokens, matching)
+# Master service integration tests (50 tests)
 PYTHONPATH=master-service master-service/.venv/bin/python -m unittest discover master-service/tests/ -v
 
-# 2. Run JD Analyzer test suite (4 tests: range extraction, domain expansion, fallbacks)
+# JD analyzer constraint extraction tests (4 tests)
 PYTHONPATH=jd-analyzer master-service/.venv/bin/python -m unittest discover jd-analyzer/tests/ -v
 
-# 3. Run Frontend Typecheck and Next.js Production Build
+# Frontend production build verification
 cd web && npm run build
 ```
 
 ---
 
-## 9. Repository Structure
+## 8. License
 
-```
-BHARAT-BUILDS-VerifAI/
-|-- .github/workflows/          # Continuous Integration and container publishing
-|   |-- docker-build.yml        # Build, smoke test, migration validation
-|   `-- publish-images.yml      # Publish images to GitHub Container Registry
-|-- docs/                       # Technical specifications and design documents
-|-- master-service/             # FastAPI Orchestration Service
-|   |-- alembic/                # Database schema migrations
-|   |-- app/
-|   |   |-- api/                # Endpoints: auth, student, storage, TPO, matching
-|   |   |-- database/           # SQLAlchemy declarative models and session factory
-|   |   |-- schemas/            # Pydantic request/response schemas
-|   |   `-- services/           # Orchestrator, matching, profile, storage services
-|   |-- core_engine/            # Scoring math, skill taxonomy, and candidate ranking
-|   `-- tests/                  # Integration and unit test cases
-|-- jd-analyzer/                # Groq LLM Job Description Parser
-|   |-- app/                    # Prompt engineering, schemas, and regex fallbacks
-|   `-- tests/                  # Extraction and fallback unit tests
-|-- resume-analyzer/            # NLP text extraction, skill entity recognition, ATS scoring
-|-- coding-analyzer/            # Real-time GitHub and LeetCode auditing service
-|-- marksheet-analyzer/         # University marksheet and semester backlog extraction
-|-- web/                        # Next.js 14 Web Frontend
-|   |-- app/                    # App Router pages (student dashboard, TPO candidates)
-|   |-- components/             # Reusable UI component library (Tailwind, Radix)
-|   `-- lib/                    # API client, session management, TypeScript interfaces
-|-- docker-compose.dev.yml      # Local development container orchestration
-|-- docker-compose.prod.yml     # Production container orchestration
-`-- README.md                   # System documentation
-```
-
----
-
-## 10. License and Acknowledgements
-
-Developed for the **Bharat Builds Hackathon**. Built with Next.js, FastAPI, PostgreSQL, and Groq Cloud. Hosted on Vercel and Amazon Web Services.
+Developed for the **Bharat Builds Hackathon**. Hosted on Vercel and Amazon Web Services.

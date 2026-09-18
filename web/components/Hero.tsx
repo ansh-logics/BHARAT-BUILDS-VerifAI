@@ -93,6 +93,9 @@ export function Hero() {
           <h1 className="text-5xl md:text-6xl lg:text-[76px] font-bold tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
             Build smarter campus placements <br className="hidden md:block" />using <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-500 pb-2 pr-2">AI.</span>
           </h1>
+          <p className="mx-auto mt-7 max-w-3xl text-lg font-medium leading-7 text-[#6e6e73] sm:text-xl">
+            Turn resumes, coding profiles, marksheets, and job descriptions into explainable shortlists and actionable student readiness plans.
+          </p>
           
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/tpo/login" className="bg-[#1d1d1f] text-white px-8 py-4 rounded-full font-semibold text-lg transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_8px_20px_rgba(0,0,0,0.12)]">
@@ -272,11 +275,11 @@ export function Hero() {
                     </div>
                     <div className="space-y-3">
                        {[
-                         { n: "Ansh Bhatt", s: "94%" },
-                         { n: "Priya Sharma", s: "91%" },
-                         { n: "Rahul Verma", s: "88%" },
-                         { n: "Sneha", s: "86%" },
-                         { n: "Arjun", s: "84%" },
+                         { n: "Pranav Kulkarni", s: "69.2%" },
+                         { n: "Rohan Gupta", s: "68.0%" },
+                         { n: "Ananya Das", s: "65.0%" },
+                         { n: "Siddharth Jain", s: "62.0%" },
+                         { n: "Isha Verma", s: "62.0%" },
                        ].map((m, i) => (
                           <motion.div 
                             key={i}
@@ -286,6 +289,7 @@ export function Hero() {
                             <div className="flex items-center gap-3">
                               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${i===0 ? 'bg-purple-600 text-white' : 'bg-zinc-200 text-zinc-600'}`}>{i+1}</div>
                               <span className="font-bold text-zinc-800 text-[15px]">{m.n}</span>
+                              <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-sky-700">Demo</span>
                             </div>
                             <span className="font-bold text-purple-600 tracking-tight">{m.s}</span>
                           </motion.div>

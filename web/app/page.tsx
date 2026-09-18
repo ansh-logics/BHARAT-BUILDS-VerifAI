@@ -1,5 +1,5 @@
 import { Hero } from "@/components/Hero";
-import { Navbar, Features, LiveUseCase, Footer } from "@/components/LandingSections";
+import { AWSArchitecture, Navbar, Features, LiveUseCase, Footer } from "@/components/LandingSections";
 
 export default function Home() {
   return (
@@ -8,6 +8,7 @@ export default function Home() {
       <Hero />
       <Features />
       <LiveUseCase />
+      <AWSArchitecture />
       <Footer />
     </main>
   );

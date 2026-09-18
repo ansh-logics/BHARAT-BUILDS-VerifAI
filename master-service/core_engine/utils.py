@@ -72,28 +72,58 @@ SKILL_FAMILIES: dict[str, set[str]] = {
         "python", "java", "javascript", "typescript", "nodejs", "express",
         "fastapi", "django", "flask", "sql", "postgresql", "mysql", "mongodb", "redis",
     },
+    "fullstack development": {
+        "html", "css", "javascript", "typescript", "react", "nextjs", "tailwind",
+        "nodejs", "express", "fastapi", "django", "flask", "sql", "postgresql", "mongodb",
+    },
     "database management": {"sql", "postgresql", "mysql", "mongodb", "redis"},
     "cloud computing": {"aws", "azure", "gcp"},
-    "devops": {"docker", "kubernetes", "aws", "azure", "gcp", "git", "github"},
-    "machine learning": {"machine learning", "deep learning", "python"},
+    "devops": {"docker", "kubernetes", "aws", "azure", "gcp", "git", "github", "ci/cd"},
+    "machine learning": {
+        "machine learning", "deep learning", "python", "tensorflow", "pytorch",
+        "numpy", "pandas", "scikit-learn", "nlp", "computer vision", "artificial intelligence", "ai", "ml", "aiml",
+    },
+    "data science": {
+        "python", "sql", "statistics", "pandas", "numpy", "data analysis", "r", "machine learning",
+    },
+    "embedded systems": {
+        "c", "c++", "embedded c", "microcontrollers", "rtos", "arm", "arduino", "iot",
+    },
     "data structures and algorithms": {"data structures", "algorithms"},
 }
 
 SKILL_FAMILY_ALIASES = {
     "web": "web development",
+    "webdev": "web development",
+    "web dev": "web development",
     "web developer": "web development",
+    "web development": "web development",
     "frontend": "frontend development",
     "front end": "frontend development",
     "backend": "backend development",
     "back end": "backend development",
+    "fullstack": "fullstack development",
+    "full stack": "fullstack development",
+    "full-stack": "fullstack development",
     "databases": "database management",
     "database": "database management",
     "cloud": "cloud computing",
     "cloud platforms": "cloud computing",
     "ci/cd": "devops",
     "ml": "machine learning",
+    "aiml": "machine learning",
+    "ai ml": "machine learning",
+    "ai/ml": "machine learning",
+    "ai-ml": "machine learning",
+    "artificial intelligence": "machine learning",
+    "ai": "machine learning",
+    "machine learning": "machine learning",
+    "data science": "data science",
+    "embedded": "embedded systems",
+    "embedded systems": "embedded systems",
     "dsa": "data structures and algorithms",
 }
+
 
 
 def as_dict(value: Any) -> dict[str, Any]:

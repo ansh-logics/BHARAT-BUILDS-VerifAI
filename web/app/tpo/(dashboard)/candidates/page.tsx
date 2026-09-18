@@ -766,21 +766,40 @@ export default function TpoDashboardPage() {
                   {[
                     parsedJD.target_student_count ? `Target ${parsedJD.target_student_count}` : null,
                     parsedJD.job_title ? `Role ${parsedJD.job_title}` : null,
-                    parsedJD.min_cgpa !== null && parsedJD.max_cgpa !== null
+                    typeof parsedJD.min_cgpa === "number" && typeof parsedJD.max_cgpa === "number"
                       ? `CGPA ${parsedJD.min_cgpa}–${parsedJD.max_cgpa}`
-                      : parsedJD.min_cgpa !== null
+                      : typeof parsedJD.min_cgpa === "number"
                         ? `Min CGPA ${parsedJD.min_cgpa}`
-                        : parsedJD.max_cgpa !== null
+                        : typeof parsedJD.max_cgpa === "number"
                           ? `Max CGPA ${parsedJD.max_cgpa}`
                           : null,
-                    parsedJD.required_skills.length ? `Skills: ${parsedJD.required_skills.slice(0, 5).join(", ")}${parsedJD.required_skills.length > 5 ? "…" : ""}` : null,
+                    parsedJD.required_skills?.length ? `Skills: ${parsedJD.required_skills.slice(0, 5).join(", ")}${parsedJD.required_skills.length > 5 ? "…" : ""}` : null,
                     parsedJD.exclude_active_backlogs ? "No active backlogs" : "Backlog: allowed",
                     parsedJD.placement_filter === "unplaced_only" ? "Placement: unplaced only" : "Placement: placed + unplaced",
-                    parsedJD.allowed_branches.length ? `Branches ${parsedJD.allowed_branches.join(", ")}` : null,
+                    parsedJD.allowed_branches?.length ? `Branches ${parsedJD.allowed_branches.join(", ")}` : null,
                     parsedJD.gender_filter !== "all_genders" ? `Gender ${parsedJD.gender_filter}` : null,
                   ]
                     .filter(Boolean)
                     .join(" | ") || "Parsed successfully"}
+                </div>
+              )}
+              {parsedJD && parsedJD.clarification_questions && parsedJD.clarification_questions.length > 0 && (
+                <div className="px-6 py-3 border-b border-indigo-100 bg-gradient-to-r from-indigo-50/70 via-sky-50/40 to-white text-xs text-indigo-950 flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2 font-semibold text-indigo-800">
+                    <Zap className="h-3.5 w-3.5 text-indigo-600 animate-pulse" />
+                    <span>AI Assistant Insights & Clarifications</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-0.5">
+                    {parsedJD.clarification_questions.map((q, idx) => (
+                      <div
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-indigo-200 text-indigo-900 shadow-xs hover:border-indigo-300 transition-colors"
+                      >
+                        <span className="text-indigo-500 font-medium">Q:</span>
+                        <span>{q}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

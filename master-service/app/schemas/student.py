@@ -576,6 +576,7 @@ class JDParsedConstraints(BaseModel):
     gender_filter_raw: str | None = None
     branch_constraint_raw: str | None = None
     branch_inference_reason: str | None = None
+    clarification_questions: list[str] = Field(default_factory=list)
 
 
 class JDMatchRequest(BaseModel):

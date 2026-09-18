@@ -524,6 +524,7 @@ export interface JDParsedConstraints {
   gender_filter_raw: string | null;
   branch_constraint_raw: string | null;
   branch_inference_reason: string | null;
+  clarification_questions?: string[];
 }
 
 export interface JDMatchResponseBody {

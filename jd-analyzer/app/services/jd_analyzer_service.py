@@ -11,63 +11,88 @@ from app.config import Settings
 from app.models.response_model import GenderFilter, JDAnalyzeResponse
 
 
-SYSTEM_PROMPT = """You are a Job Description parser for a placement intelligence system.
+SYSTEM_PROMPT = """You are a Job Description and TPO Query parser for a placement intelligence system.
 
 Your ONLY job is to extract structured information from combined input text and return STRICT valid JSON.
-The input may contain both:
-1) Job description details
-2) TPO candidate-selection constraints
+The input may contain:
+1) Formal job descriptions (roles, requirements, responsibilities, packages, bonds)
+2) Informal TPO candidate search queries (e.g. "find 5 students with 5-7 cgpa not more then or less then this also they should have the speciality in webdev" or "can you find 5 students between cgpa of 5 and 7 with AIML skills")
 
 RULES:
 - Output ONLY a JSON object. No explanation, no markdown, no code fences, no extra text.
 - If a field cannot be determined, use null for strings/numbers and [] for arrays.
 - For accepts_freshers: true if 0 years experience required OR "freshers welcome" is mentioned.
 - For min_experience_years: extract the MINIMUM number only (e.g. "2-5 years" → 2). If fresher/entry level, use 0.
-- For required_skills: only hard requirements explicitly stated.
+- For required_skills: only hard requirements explicitly stated or implied by domain keywords.
 - For preferred_skills: "good to have", "plus", "bonus", or "preferred" skills.
 - For key_traits: soft skills and personality traits (e.g. "team player", "self-starter").
 - For role_type: one of → "full_time" | "internship" | "contract" | "part_time" | "unknown"
-- Extract company_name from explicit company/organization/employer mentions when available.
-- Extract pay_or_stipend from stipend/salary/CTC/compensation statements as concise text.
-- Extract bond_details from service-agreement/bond/commitment clauses as concise text.
-- Generate jd_summary as a concise 2-4 sentence summary of the role and constraints.
-- Return canonical lowercase skill and trait tokens wherever possible.
-- Extract TPO constraints when present:
-  - target_student_count: numeric count requested (e.g. "give me 50 students", "find 5 students")
-  - exclude_active_backlogs: true for statements like "no back", "without backlog"
-  - placement_filter: "unplaced_only" if text says not placed / unplaced only; else "placed_or_unplaced"
-  - placement_exception_roll_nos: explicit roll numbers allowed as exceptions
-  - min_cgpa: numeric lower bound for CGPA (e.g. "above 7", "min 6.5", "5-7 cgpa" → 5, "not less than 5" → 5)
-  - max_cgpa: numeric upper bound for CGPA when a range or ceiling is given (e.g. "5-7 cgpa" → 7, "below 8" → 8, "not more than 7" → 7, "cgpa between 5 and 7" → 7)
-  - allowed_branches: branch list if constraints mention branches
-- CGPA range handling: when the text says "5-7 cgpa", "cgpa between 5 and 7", "cgpa 5 to 7",
-  "not more than 7", "not less than 5", "strictly 5 to 7" — extract BOTH min_cgpa AND max_cgpa.
-- Domain keyword expansion: when a domain keyword is used instead of explicit skills, expand it:
-  - "webdev", "web development", "web developer" → add ["html", "css", "javascript", "react"] to required_skills
-  - "fullstack", "full stack", "full-stack" → add ["html", "css", "javascript", "react", "node.js"] to required_skills
-  - "frontend", "front end", "front-end" → add ["html", "css", "javascript", "react"] to required_skills
-  - "backend", "back end", "back-end" → add ["node.js", "sql", "rest api"] to required_skills
-  - "ml", "machine learning" → add ["python", "machine learning", "numpy", "pandas"] to required_skills
-  - "data science", "data analyst" → add ["python", "sql", "statistics"] to required_skills
-  - "android" → add ["android", "kotlin", "java"] to required_skills
-  - "ios" → add ["swift", "ios"] to required_skills
-- Gender constraints:
-  - "only girls", "female only", "women only", "for women" → gender_filter="women_only"
-  - "only boys", "male only", "men only", "for men" → gender_filter="men_only"
-  - no restriction / mixed / any gender → gender_filter="all_genders"
-  - any custom/non-binary-specific condition → gender_filter="custom_text" and preserve phrase in gender_filter_raw
-- Branch-family inference:
-  - For phrases like "CSE related", infer allowed_branches as ["cse","it","aiml","ds"] unless explicitly contradicted.
-  - Preserve original branch phrase in branch_constraint_raw when inference is used.
+
+CRITICAL — STRICT CGPA RANGE EXTRACTION:
+You MUST extract BOTH min_cgpa and max_cgpa whenever a range, window, or boundary is stated.
+- "5-7 cgpa", "5 to 7 cgpa", "5 - 7 cgpa" → min_cgpa: 5, max_cgpa: 7
+- "between cgpa of 5 and 7", "between 5 and 7 cgpa", "cgpa between 5 and 7" → min_cgpa: 5, max_cgpa: 7
+- "5-7 cgpa not more then or less then this" → min_cgpa: 5, max_cgpa: 7
+- "strictly between 6 and 8" → min_cgpa: 6, max_cgpa: 8
+- "above 7", "min 6.5", "at least 7 cgpa" → min_cgpa: 7, max_cgpa: null
+- "below 8", "under 7.5", "not more than 7 cgpa" → min_cgpa: null, max_cgpa: 8
+- "not more than or less than" a range → extract lower bound into min_cgpa and upper bound into max_cgpa.
+
+CRITICAL — DOMAIN KEYWORD EXPANSION:
+When a candidate domain or specialty is stated instead of individual tools, expand it into canonical required_skills:
+- "webdev", "web development", "web dev", "web developer" → add ["html", "css", "javascript", "react"] to required_skills, domain="web development"
+- "fullstack", "full stack" → add ["html", "css", "javascript", "react", "node.js"] to required_skills, domain="fullstack"
+- "frontend", "front end" → add ["html", "css", "javascript", "react"] to required_skills, domain="frontend"
+- "backend", "back end" → add ["node.js", "sql", "rest api"] to required_skills, domain="backend"
+- "aiml", "ai ml", "ai/ml", "artificial intelligence", "machine learning", "ml" → add ["python", "machine learning", "tensorflow", "numpy"] to required_skills, domain="machine learning"
+- "data science", "data analyst" → add ["python", "sql", "statistics", "pandas"] to required_skills, domain="data science"
+- "android", "android developer" → add ["android", "kotlin", "java"] to required_skills, domain="android"
+- "ios", "ios developer" → add ["swift", "ios"] to required_skills, domain="ios"
+- "embedded", "embedded systems" → add ["c", "embedded c", "rtos", "microcontrollers"] to required_skills, domain="embedded systems"
+- "cloud", "devops" → add ["aws", "docker", "kubernetes", "ci/cd"] to required_skills, domain="devops"
+
+CRITICAL — TPO CONSTRAINTS:
+- target_student_count: numeric count requested (e.g. "find 5 students", "need 10 candidates" → 5 or 10)
+- exclude_active_backlogs: true for "no backlogs", "without backlog", "no active backlog"
+- placement_filter: "unplaced_only" if user specifies unplaced/not placed students; else "placed_or_unplaced"
+- allowed_branches: list of branches if explicitly requested (e.g. ["cse"], ["ece", "eee"])
+- Branch family inference: "CSE related" → allowed_branches: ["cse", "it", "aiml", "ds"]
+
+CRITICAL — CLARIFICATION QUESTIONS:
+If the user query is brief, underspecified, or leaves key criteria unstated:
+Generate 1-3 intelligent, concise clarification questions in "clarification_questions" to help narrow down the search.
+Examples:
+- If no branch specified: "Would you like to restrict to specific branches (e.g. CSE, IT, AIML) or include all branches?"
+- If backlog policy not mentioned: "Should students with active backlogs be excluded?"
+- If placement status not mentioned: "Are you looking for unplaced students only or placed as well?"
+If everything is clear and comprehensive, return [].
 """
 
-USER_PROMPT = """Parse this combined text (JD + optional TPO constraints) and return only JSON:
+USER_PROMPT = """Parse the following combined input (Job Description + optional TPO query) and return ONLY a JSON object.
+
+---
+EXAMPLES (study these carefully before parsing):
+
+Input: "Find 5 students with CGPA between 5 and 7 who have webdev skills"
+Output: {{"target_student_count": 5, "min_cgpa": 5, "max_cgpa": 7, "required_skills": ["html", "css", "javascript", "react"], "preferred_skills": [], "tools_and_technologies": [], "responsibilities": [], "key_traits": [], "role_type": "unknown", "jd_summary": "Looking for 5 students with CGPA between 5 and 7 specializing in web development.", "company_name": null, "pay_or_stipend": null, "bond_details": null, "job_title": null, "min_experience_years": null, "accepts_freshers": true, "education_requirements": [], "location": null, "domain": "web development", "duration": null, "work_type": null, "exclude_active_backlogs": false, "placement_filter": "placed_or_unplaced", "placement_exception_roll_nos": [], "allowed_branches": [], "gender_filter": "all_genders", "gender_filter_raw": null, "branch_constraint_raw": null, "branch_inference_reason": null, "clarification_questions": ["Would you like to restrict to specific branches (e.g. CSE, IT)?", "Should students with active backlogs be excluded?"]}}
+
+Input: "find 5 students with 5-7 cgpa not more then or less then this also they should have the speciality in webdev"
+Output: {{"target_student_count": 5, "min_cgpa": 5, "max_cgpa": 7, "required_skills": ["html", "css", "javascript", "react"], "preferred_skills": [], "tools_and_technologies": [], "responsibilities": [], "key_traits": [], "role_type": "unknown", "jd_summary": "Strictly filter 5 students with CGPA in the 5-7 range with web development specialization.", "company_name": null, "pay_or_stipend": null, "bond_details": null, "job_title": null, "min_experience_years": null, "accepts_freshers": true, "education_requirements": [], "location": null, "domain": "web development", "duration": null, "work_type": null, "exclude_active_backlogs": false, "placement_filter": "placed_or_unplaced", "placement_exception_roll_nos": [], "allowed_branches": [], "gender_filter": "all_genders", "gender_filter_raw": null, "branch_constraint_raw": null, "branch_inference_reason": null, "clarification_questions": ["Would you like to restrict to specific branches (e.g. CSE, IT)?", "Should students with active backlogs be excluded?"]}}
+
+Input: "can you find 5 students between cgpa of 5 and 7 with AIML skills"
+Output: {{"target_student_count": 5, "min_cgpa": 5, "max_cgpa": 7, "required_skills": ["python", "machine learning", "tensorflow", "numpy"], "preferred_skills": [], "tools_and_technologies": [], "responsibilities": [], "key_traits": [], "role_type": "unknown", "jd_summary": "Find 5 students with CGPA between 5 and 7 specializing in AI/ML.", "company_name": null, "pay_or_stipend": null, "bond_details": null, "job_title": null, "min_experience_years": null, "accepts_freshers": true, "education_requirements": [], "location": null, "domain": "machine learning", "duration": null, "work_type": null, "exclude_active_backlogs": false, "placement_filter": "placed_or_unplaced", "placement_exception_roll_nos": [], "allowed_branches": [], "gender_filter": "all_genders", "gender_filter_raw": null, "branch_constraint_raw": null, "branch_inference_reason": null, "clarification_questions": ["Would you like to restrict to specific branches (e.g. AIML, CSE, DS)?", "Should students with active backlogs be excluded?"]}}
+
+Input: "I need 10 unplaced CSE students with min CGPA 7.5 and no active backlogs for a React.js internship"
+Output: {{"target_student_count": 10, "min_cgpa": 7.5, "max_cgpa": null, "required_skills": ["react"], "preferred_skills": [], "tools_and_technologies": ["react"], "responsibilities": [], "key_traits": [], "role_type": "internship", "jd_summary": "10 unplaced CSE students, CGPA 7.5+, no backlogs, React.js internship.", "company_name": null, "pay_or_stipend": null, "bond_details": null, "job_title": "Frontend Intern", "min_experience_years": 0, "accepts_freshers": true, "education_requirements": [], "location": null, "domain": "frontend", "duration": null, "work_type": null, "exclude_active_backlogs": true, "placement_filter": "unplaced_only", "placement_exception_roll_nos": [], "allowed_branches": ["cse"], "gender_filter": "all_genders", "gender_filter_raw": null, "branch_constraint_raw": "CSE", "branch_inference_reason": null, "clarification_questions": []}}
+---
+
+Now parse this input:
 
 <combined_input>
 {jd_text}
 </combined_input>
 
-Return exactly this schema:
+Return exactly this schema (fill every field, never omit any key):
 {{
   "company_name": "string | null",
   "pay_or_stipend": "string | null",
@@ -97,8 +122,10 @@ Return exactly this schema:
   "gender_filter": "women_only | men_only | all_genders | custom_text",
   "gender_filter_raw": "string | null",
   "branch_constraint_raw": "string | null",
-  "branch_inference_reason": "string | null"
+  "branch_inference_reason": "string | null",
+  "clarification_questions": ["string"]
 }}"""
+
 
 
 class JDAnalyzerServiceError(Exception):
@@ -164,11 +191,16 @@ TARGET_COUNT_PATTERNS = (
     re.compile(r"\b(\d{1,4})\s+(?:students?|candidates?)\s+(?:needed|required)\b", re.IGNORECASE),
 )
 
-# Pattern: "5-7 cgpa", "cgpa 5 to 7", "cgpa between 5 and 7" → extracts (min, max)
-CGPA_RANGE_PATTERN = re.compile(
-    r"\b(\d(?:\.\d+)?)\s*[-–to]+\s*(\d(?:\.\d+)?)\s*cgpa\b"
-    r"|\bcgpa\s+(?:between\s+)?(\d(?:\.\d+)?)\s+(?:and|to|-)\s+(\d(?:\.\d+)?)\b",
-    re.IGNORECASE,
+# Patterns for CGPA ranges: "5-7 cgpa", "5 to 7 cgpa", "between cgpa of 5 and 7", "between 5 and 7 cgpa", "cgpa between 5 and 7", "cgpa of 5 to 7"
+CGPA_RANGE_PATTERNS = (
+    # "5-7 cgpa", "5 to 7 cgpa", "5 - 7 cgpa"
+    re.compile(r"\b(\d(?:\.\d+)?)\s*(?:[-–]|to)\s*(\d(?:\.\d+)?)\s*cgpa\b", re.IGNORECASE),
+    # "between cgpa of 5 and 7", "between cgpa 5 and 7", "between 5 and 7 cgpa", "between 5 to 7 cgpa"
+    re.compile(r"\bbetween\s+(?:cgpa\s+(?:of\s+)?)?(\d(?:\.\d+)?)\s+(?:and|to|-)\s+(\d(?:\.\d+)?)(?:\s*cgpa)?\b", re.IGNORECASE),
+    # "cgpa between 5 and 7", "cgpa of 5 to 7", "cgpa from 5 to 7", "cgpa in 5-7"
+    re.compile(r"\bcgpa\s+(?:between|from|in|of)\s+(\d(?:\.\d+)?)\s+(?:and|to|-)\s+(\d(?:\.\d+)?)\b", re.IGNORECASE),
+    # "from 5 to 7 cgpa"
+    re.compile(r"\bfrom\s+(\d(?:\.\d+)?)\s+(?:to|-)\s+(\d(?:\.\d+)?)\s*cgpa\b", re.IGNORECASE),
 )
 # Pattern: "min cgpa 6", "cgpa >= 7", "cgpa above 5"
 CGPA_MIN_PATTERNS = (
@@ -201,12 +233,24 @@ DOMAIN_SKILL_EXPANSION: dict[str, list[str]] = {
     "backend": ["node.js", "sql", "rest api"],
     "back end": ["node.js", "sql", "rest api"],
     "back-end": ["node.js", "sql", "rest api"],
-    "machine learning": ["python", "machine learning", "numpy", "pandas"],
-    "ml": ["python", "machine learning", "numpy", "pandas"],
-    "data science": ["python", "sql", "statistics"],
-    "data analyst": ["python", "sql", "statistics"],
+    "machine learning": ["python", "machine learning", "tensorflow", "numpy"],
+    "ml": ["python", "machine learning", "tensorflow", "numpy"],
+    "aiml": ["python", "machine learning", "tensorflow", "numpy"],
+    "ai ml": ["python", "machine learning", "tensorflow", "numpy"],
+    "ai/ml": ["python", "machine learning", "tensorflow", "numpy"],
+    "ai-ml": ["python", "machine learning", "tensorflow", "numpy"],
+    "artificial intelligence": ["python", "machine learning", "tensorflow", "numpy"],
+    "data science": ["python", "sql", "statistics", "pandas"],
+    "data analyst": ["python", "sql", "statistics", "pandas"],
+
     "android": ["android", "kotlin", "java"],
+    "android developer": ["android", "kotlin", "java"],
     "ios": ["swift", "ios"],
+    "ios developer": ["swift", "ios"],
+    "embedded": ["c", "embedded c", "rtos", "microcontrollers"],
+    "embedded systems": ["c", "embedded c", "rtos", "microcontrollers"],
+    "devops": ["docker", "kubernetes", "aws", "ci/cd"],
+    "cloud": ["aws", "docker", "kubernetes"],
 }
 
 
@@ -333,25 +377,18 @@ def _extract_target_student_count_from_text(jd_text: str) -> int | None:
 
 
 def _extract_cgpa_range_from_text(jd_text: str) -> tuple[float | None, float | None]:
-    """Extract (min_cgpa, max_cgpa) from range expressions like '5-7 cgpa', 'cgpa 5 to 7'."""
-    match = CGPA_RANGE_PATTERN.search(jd_text)
-    if match:
-        groups = match.groups()
-        # groups: (min1, max1, min2, max2) from alternation
-        if groups[0] is not None and groups[1] is not None:
-            try:
-                lo, hi = float(groups[0]), float(groups[1])
-                if 0 <= lo <= 10 and 0 <= hi <= 10:
-                    return (min(lo, hi), max(lo, hi))
-            except ValueError:
-                pass
-        if groups[2] is not None and groups[3] is not None:
-            try:
-                lo, hi = float(groups[2]), float(groups[3])
-                if 0 <= lo <= 10 and 0 <= hi <= 10:
-                    return (min(lo, hi), max(lo, hi))
-            except ValueError:
-                pass
+    """Extract (min_cgpa, max_cgpa) from range expressions like '5-7 cgpa', 'between cgpa of 5 and 7'."""
+    for pattern in CGPA_RANGE_PATTERNS:
+        match = pattern.search(jd_text)
+        if match:
+            groups = [g for g in match.groups() if g is not None]
+            if len(groups) >= 2:
+                try:
+                    lo, hi = float(groups[0]), float(groups[1])
+                    if 0 <= lo <= 10 and 0 <= hi <= 10:
+                        return (min(lo, hi), max(lo, hi))
+                except ValueError:
+                    continue
     return None, None
 
 
@@ -430,6 +467,24 @@ def _extract_placement_filter_from_text(jd_text: str) -> str | None:
     return None
 
 
+def _generate_fallback_clarifications(payload: JDAnalyzeResponse, jd_text: str) -> list[str]:
+    questions: list[str] = []
+    lowered = jd_text.lower()
+    if not payload.allowed_branches and not any(b in lowered for b in ("all branch", "any branch", "every branch", "all branches")):
+        questions.append("Would you like to restrict candidates to specific branches (e.g. CSE, IT, AIML)?")
+    if not payload.exclude_active_backlogs and not any(b in lowered for b in ("backlog", "backlogs", "kt", "kts", "arrear")):
+        questions.append("Should students with active backlogs be excluded from results?")
+    if payload.placement_filter == "placed_or_unplaced" and not any(p in lowered for p in ("placed", "unplaced")):
+        questions.append("Are you looking for unplaced students only or placed as well?")
+    seen = set()
+    deduped = []
+    for q in questions:
+        if q not in seen:
+            seen.add(q)
+            deduped.append(q)
+    return deduped[:3]
+
+
 def _apply_text_fallbacks(*, jd_text: str, payload: JDAnalyzeResponse) -> JDAnalyzeResponse:
     updates: dict[str, Any] = {}
     if payload.target_student_count is None:
@@ -468,9 +523,17 @@ def _apply_text_fallbacks(*, jd_text: str, payload: JDAnalyzeResponse) -> JDAnal
     if expanded != current_skills:
         updates["required_skills"] = expanded
 
+    # Clarification questions fallback
+    clarifications = list(payload.clarification_questions)
+    if not clarifications:
+        clarifications = _generate_fallback_clarifications(payload, jd_text)
+    if clarifications != payload.clarification_questions:
+        updates["clarification_questions"] = clarifications
+
     if not updates:
         return payload
     return payload.model_copy(update=updates)
+
 
 
 def _to_number(value: Any) -> float | None:
@@ -555,6 +618,7 @@ def _normalize_output(raw: dict[str, Any]) -> JDAnalyzeResponse:
         gender_filter_raw=gender_filter_raw,
         branch_constraint_raw=branch_constraint_raw,
         branch_inference_reason=branch_inference_reason,
+        clarification_questions=_to_string_list(raw.get("clarification_questions")),
     )
 
 

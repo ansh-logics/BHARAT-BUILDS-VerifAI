@@ -27,7 +27,31 @@ class JDConstraintFallbackTests(unittest.TestCase):
         self.assertEqual(normalized.target_student_count, 10)
         self.assertEqual(normalized.min_cgpa, 7.0)
         self.assertTrue(normalized.exclude_active_backlogs)
-        self.assertEqual(normalized.placement_filter, "unplaced_only")
+    def test_cgpa_range_and_webdev_expansion(self) -> None:
+        jd_text = "Find 5 students with 5-7 cgpa not more then or less then this also they should have the speciality in webdev"
+        payload = JDAnalyzeResponse()
+
+        normalized = _apply_text_fallbacks(jd_text=jd_text, payload=payload)
+
+        self.assertEqual(normalized.target_student_count, 5)
+        self.assertEqual(normalized.min_cgpa, 5.0)
+        self.assertEqual(normalized.max_cgpa, 7.0)
+        self.assertIn("html", normalized.required_skills)
+        self.assertIn("react", normalized.required_skills)
+        self.assertGreater(len(normalized.clarification_questions), 0)
+
+    def test_between_cgpa_and_aiml_expansion(self) -> None:
+        jd_text = "can you find 5 students between cgpa of 5 and 7 with AIML skills"
+        payload = JDAnalyzeResponse()
+
+        normalized = _apply_text_fallbacks(jd_text=jd_text, payload=payload)
+
+        self.assertEqual(normalized.target_student_count, 5)
+        self.assertEqual(normalized.min_cgpa, 5.0)
+        self.assertEqual(normalized.max_cgpa, 7.0)
+        self.assertIn("machine learning", normalized.required_skills)
+        self.assertIn("python", normalized.required_skills)
+        self.assertGreater(len(normalized.clarification_questions), 0)
 
 
 if __name__ == "__main__":

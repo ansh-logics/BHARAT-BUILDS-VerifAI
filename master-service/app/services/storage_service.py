@@ -114,3 +114,26 @@ async def create_presigned_resume_download_url(*, settings: Settings, object_key
         )
 
     return await asyncio.to_thread(_create)
+
+
+async def download_resume_from_s3(
+    *, settings: Settings, object_key: str
+) -> tuple[bytes, str, str]:
+    if not settings.s3_resume_bucket:
+        raise ValueError("S3 resume storage is not configured. Set S3_RESUME_BUCKET.")
+
+    def _download() -> tuple[bytes, str, str]:
+        response = _s3_client(settings).get_object(
+            Bucket=settings.s3_resume_bucket,
+            Key=object_key,
+        )
+        body = response["Body"]
+        try:
+            content = body.read()
+        finally:
+            body.close()
+        content_type = str(response.get("ContentType") or "application/octet-stream")
+        filename = Path(object_key).name or "resume.pdf"
+        return content, content_type, filename
+
+    return await asyncio.to_thread(_download)

@@ -165,6 +165,8 @@ class StudentAnalyzeResponse(BaseModel):
     academics: AcademicsData = Field(default_factory=AcademicsData)
     overall_score: float = Field(default=0.0, ge=0, le=100)
     resume_url: str | None = None
+    resume_data: dict[str, Any] = Field(default_factory=dict)
+    academic_data: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def use_analyzed_academics_as_source_of_truth(self) -> Self:
@@ -175,12 +177,11 @@ class StudentAnalyzeResponse(BaseModel):
 
 
 class StudentProfileCreate(StudentAnalyzeResponse):
-    resume_data: dict[str, Any] = Field(default_factory=dict)
-    academic_data: dict[str, Any] = Field(default_factory=dict)
     github_data: dict[str, Any] = Field(default_factory=dict)
     leetcode_data: dict[str, Any] = Field(default_factory=dict)
     resume_url: str | None = None
     marksheet_url: str | None = None
+    update_sources: list[Literal["resume", "marksheet", "coding"]] | None = None
 
     @field_validator("skills")
     @classmethod

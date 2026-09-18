@@ -34,6 +34,8 @@ export interface AnalyzeResponse {
   };
   overall_score: number;
   resume_url: string | null;
+  resume_data: Record<string, unknown>;
+  academic_data: Record<string, unknown>;
 }
 
 export interface StudentProfilePayload {
@@ -66,6 +68,7 @@ export interface StudentProfilePayload {
   academic_data: Record<string, unknown>;
   github_data: Record<string, unknown>;
   leetcode_data: Record<string, unknown>;
+  update_sources?: Array<"resume" | "marksheet" | "coding">;
 }
 
 export interface SaveProfileResponse {

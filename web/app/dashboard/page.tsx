@@ -465,6 +465,8 @@ export default function DashboardPage() {
           academics: profileSnapshot.academics,
           overall_score: profileSnapshot.overall_score,
           resume_url: profileSnapshot.resume_url ?? null,
+          resume_data: profileSnapshot.resume_data,
+          academic_data: profileSnapshot.academic_data,
         };
       }
 
@@ -511,13 +513,22 @@ export default function DashboardPage() {
         resume_url: effectiveAnalysis.resume_url,
         marksheet_url: null,
         resume_data: {
+          ...(effectiveAnalysis.resume_data || {}),
           file_name: currentResumeFileName || null,
         },
         academic_data: {
+          ...(effectiveAnalysis.academic_data || {}),
           file_name: currentMarksheetFileName || null,
         },
         github_data: effectiveAnalysis.coding.github,
         leetcode_data: effectiveAnalysis.coding.leetcode,
+        update_sources: hasExistingProfile
+          ? [
+              ...(resumeDirty ? (["resume"] as const) : []),
+              ...(marksheetDirty ? (["marksheet"] as const) : []),
+              ...(codingDirty ? (["coding"] as const) : []),
+            ]
+          : ["resume", "marksheet", "coding"],
       };
 
       const response = await saveProfile(payload, token);

@@ -304,23 +304,53 @@ class ProfileService:
                     status_code=403,
                     detail="This account is registered. Log in to update your profile.",
                 )
+            profile = (
+                self.db.query(StudentProfile)
+                .filter(StudentProfile.student_id == student.id)
+                .one_or_none()
+            )
+            sources = (
+                set(payload.update_sources)
+                if payload.update_sources is not None
+                else {"resume", "marksheet", "coding"}
+            )
+            resume_changed = profile is None or "resume" in sources
+            marksheet_changed = profile is None or "marksheet" in sources
+            coding_changed = profile is None or "coding" in sources
+
+            # Only the source that owns a field may replace it. In particular,
+            # verified academic values cannot be changed by resume/manual edits.
+            if profile is not None and not marksheet_changed:
+                payload.student.cgpa = student.cgpa
+                payload.student.cgpa_verified = student.cgpa_verified
+                payload.academics.cgpa = student.cgpa
+                payload.academics.verified = student.cgpa_verified
+                payload.academics.score = profile.academic_score
+                payload.academic_data = dict(profile.academic_data or {})
+            if profile is not None and not resume_changed:
+                payload.skills = list(profile.skills_json or profile.skills or [])
+                payload.resume_data = dict(profile.resume_data or {})
+            if profile is not None and not coding_changed:
+                payload.coding.persona = profile.coding_persona
+                payload.coding.score = profile.coding_score
+                payload.coding.github = dict(profile.github_data or {})
+                payload.coding.leetcode = dict(profile.leetcode_data or {})
+                payload.github_data = dict(profile.github_data or {})
+                payload.leetcode_data = dict(profile.leetcode_data or {})
+
             self._assert_identity_and_anomalies(student, payload)
-            self._assert_github_name_matches_registered(student, payload)
-            self._assert_unique_coding_handles(student.id, payload)
+            if coding_changed:
+                self._assert_github_name_matches_registered(student, payload)
+                self._assert_unique_coding_handles(student.id, payload)
             student.name = payload.student.name
             student.phone = payload.student.phone
             student.branch = payload.student.branch
-            student.cgpa = payload.student.cgpa
             student.gender = payload.student.gender
-            student.cgpa_verified = payload.student.cgpa_verified
+            if marksheet_changed:
+                student.cgpa = payload.student.cgpa
+                student.cgpa_verified = payload.student.cgpa_verified
             if payload.student.roll_no:
                 student.roll_no = payload.student.roll_no
-
-        profile = (
-            self.db.query(StudentProfile)
-            .filter(StudentProfile.student_id == student.id)
-            .one_or_none()
-        )
 
         skills = normalize_skills(payload.skills)
         resume_data = payload.resume_data or {}
@@ -364,22 +394,25 @@ class ProfileService:
             self.db.add(profile)
             self.db.flush()
         else:
-            profile.github_username = github_username
-            profile.leetcode_username = leetcode_username
-            profile.skills = skills
-            profile.skills_json = skills
-            profile.coding_persona = payload.coding.persona
-            profile.coding_score = payload.coding.score
-            profile.academic_score = payload.academics.score
+            if coding_changed:
+                profile.github_username = github_username
+                profile.leetcode_username = leetcode_username
+                profile.coding_persona = payload.coding.persona
+                profile.coding_score = payload.coding.score
+                profile.github_data = payload.github_data
+                profile.leetcode_data = payload.leetcode_data
+            if resume_changed:
+                profile.skills = skills
+                profile.skills_json = skills
+                profile.resume_data = resume_data
+            if marksheet_changed:
+                profile.academic_score = payload.academics.score
+                profile.academic_data = academic_data
             profile.overall_score = payload.overall_score
-            profile.github_data = payload.github_data
-            profile.leetcode_data = payload.leetcode_data
-            profile.resume_data = resume_data
-            profile.academic_data = academic_data
             profile.last_analyzed_at = datetime.now(UTC)
 
         has_file_metadata = bool((resume_data or {}).get("file_name") or (academic_data or {}).get("file_name"))
-        if payload.resume_url or payload.marksheet_url or has_file_metadata:
+        if profile is not None and (resume_changed or marksheet_changed) and (payload.resume_url or payload.marksheet_url or has_file_metadata):
             latest_upload = (
                 self.db.query(RawUpload)
                 .filter(RawUpload.student_id == student.id)

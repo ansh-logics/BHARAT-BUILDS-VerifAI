@@ -57,6 +57,7 @@ export function Navbar() {
       </div>
       <nav className="hidden md:flex items-center gap-8">
         <Link className="font-sans tracking-tight text-sm font-semibold text-[#1d1d1f] dark:text-purple-400" href="/#home">Home</Link>
+        <Link className="font-sans tracking-tight text-sm font-semibold text-[#86868b] dark:text-zinc-400 hover:text-[#1d1d1f] transition-colors duration-300" href="/demo">Live Demo</Link>
         <Link className="font-sans tracking-tight text-sm font-semibold text-[#86868b] dark:text-zinc-400 hover:text-[#1d1d1f] transition-colors duration-300" href="/#live-demo">Case Studies</Link>
         <Link className="font-sans tracking-tight text-sm font-semibold text-[#86868b] dark:text-zinc-400 hover:text-[#1d1d1f] transition-colors duration-300" href="/#architecture">AWS Architecture</Link>
       </nav>

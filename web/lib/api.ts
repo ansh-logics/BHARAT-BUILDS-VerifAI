@@ -163,6 +163,13 @@ export async function matchCandidatesWithJdMultipart(
   return data;
 }
 
+export async function getDemoMatch(
+  scenario: "frontend" | "backend" | "data",
+): Promise<JDMatchResponseBody> {
+  const { data } = await api.get<JDMatchResponseBody>(`/demo/match/${scenario}`);
+  return data;
+}
+
 export async function searchCandidates(
   query: string,
   minScore: number = 0,

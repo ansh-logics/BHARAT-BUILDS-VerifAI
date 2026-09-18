@@ -98,8 +98,8 @@ export function Hero() {
           </p>
           
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/tpo/login" className="bg-[#1d1d1f] text-white px-8 py-4 rounded-full font-semibold text-lg transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_8px_20px_rgba(0,0,0,0.12)]">
-              For Placement Cells
+            <Link href="/demo" className="bg-[#1d1d1f] text-white px-8 py-4 rounded-full font-semibold text-lg transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_8px_20px_rgba(0,0,0,0.12)]">
+              Try Live Demo
             </Link>
             <Link href="/login" className="bg-white text-[#1d1d1f] ring-1 ring-black/[0.06] hover:bg-zinc-50 px-8 py-4 rounded-full font-semibold text-lg transition-transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
               For Students

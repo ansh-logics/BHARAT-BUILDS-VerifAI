@@ -26,6 +26,12 @@ def _normalize_text_set(values: list[str] | None) -> set[str]:
     return {v.strip().lower() for v in values if isinstance(v, str) and v.strip()}
 
 
+def is_demo_identity(*, email: str, roll_no: str | None) -> bool:
+    return (roll_no or "").upper().startswith("DEMO-") or email.lower().endswith(
+        ".demo@verifai.dev"
+    )
+
+
 def _latest_resume_urls(db: Session, student_ids: list[int]) -> dict[int, str]:
     if not student_ids:
         return {}
@@ -186,7 +192,7 @@ def run_jd_matching(
                     coding_persona=profile.coding_persona if profile is not None else None,
                     is_placed=is_placed,
                     has_active_backlog=has_backlog,
-                    is_demo=student.email.lower().endswith(".demo@verifai.dev"),
+                    is_demo=is_demo_identity(email=student.email, roll_no=student.roll_no),
                     matched_skills=matched_skills,
                     missing_required_skills=missing_required,
                     missing_preferred_skills=missing_preferred,

@@ -3,10 +3,21 @@ from __future__ import annotations
 import unittest
 
 from app.schemas.student import JDParsedConstraints
-from app.services.matching_service import build_skill_explanation
+from app.services.matching_service import build_skill_explanation, is_demo_identity
 
 
 class MatchingExplanationTests(unittest.TestCase):
+    def test_demo_identity_uses_namespaced_roll_number(self) -> None:
+        self.assertTrue(
+            is_demo_identity(
+                email="verifai.aktu-cse-001@inbox.testmail.app",
+                roll_no="DEMO-AKTU-CSE-001",
+            )
+        )
+        self.assertFalse(
+            is_demo_identity(email="student@example.edu", roll_no="AKTU-CSE-001")
+        )
+
     def test_aliases_and_skill_families_produce_consistent_evidence(self) -> None:
         constraints = JDParsedConstraints(
             required_skills=["Node.js", "web development", "PostgreSQL"],

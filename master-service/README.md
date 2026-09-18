@@ -165,6 +165,15 @@ Response includes:
 
 Resume objects are private in S3. The EC2 workload uses an instance role for
 `s3:GetObject` and `s3:PutObject`; no AWS access keys are stored in `.env`.
+Browser PDF previews also require the bucket CORS configuration in
+`infra/aws/s3-resume-cors.json`; apply it from the repository root with:
+
+```bash
+aws s3api put-bucket-cors \
+  --bucket "$S3_RESUME_BUCKET" \
+  --cors-configuration file://infra/aws/s3-resume-cors.json
+```
+
 Run `python -m scripts.migrate_cloudinary_resumes_to_s3` once after switching an
 existing deployment to S3. The migration is idempotent and only processes
 remaining `res.cloudinary.com` records.

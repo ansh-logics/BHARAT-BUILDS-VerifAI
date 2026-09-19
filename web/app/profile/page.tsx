@@ -22,6 +22,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import ResumePdfViewer from "@/components/resume-pdf-viewer";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PaletteSwitcher } from "@/components/theme/palette-switcher";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
@@ -57,11 +58,11 @@ export default function ProfilePage() {
     clearAuth();
     router.replace("/login");
   };
-  const surfaceCardClass = "rounded-3xl border border-slate-200/60 bg-white shadow-sm";
+  const surfaceCardClass = "rounded-3xl border border-border/80 bg-card text-card-foreground shadow-sm";
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#f8f9fa] px-4 py-8">
+      <main className="min-h-screen bg-background text-foreground transition-colors px-4 py-8">
         <div className="mx-auto max-w-6xl space-y-3">
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-2">
@@ -119,7 +120,7 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <main className="min-h-screen bg-[#f8f9fa] px-4 py-8">
+      <main className="min-h-screen bg-background text-foreground transition-colors px-4 py-8">
         <div className="mx-auto max-w-lg space-y-3">
           <Card className={surfaceCardClass}>
             <CardHeader>
@@ -156,28 +157,29 @@ export default function ProfilePage() {
   const topSkills = profile.skills.slice(0, 8);
 
   return (
-    <main className="min-h-screen bg-[#f8f9fa] px-4 py-8">
-      <div className="mx-auto max-w-6xl space-y-3">
-      <header className="flex flex-wrap items-center justify-between gap-3">
+    <main className="min-h-screen bg-background text-foreground transition-colors px-4 py-8">
+      <div className="mx-auto max-w-6xl space-y-4">
+      <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-2xs">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Your profile</h1>
-          <p className="text-sm text-slate-600">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Your Student Profile</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             {student.name} · {student.email}
             {student.roll_no ? ` · ${student.roll_no}` : ""}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2.5">
+          <PaletteSwitcher />
           <Link
             href="/dashboard"
             className={cn(
-              buttonVariants({ variant: "outline" }),
-              "rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "rounded-full border-border/80 bg-card hover:bg-muted font-medium text-xs sm:text-sm",
             )}
           >
-            Update analysis
+            Update Analysis
           </Link>
-          <Button variant="secondary" className="rounded-full bg-slate-100 text-slate-800 hover:bg-slate-200" onClick={signOut}>
-            Sign out
+          <Button variant="ghost" size="sm" className="rounded-full text-xs sm:text-sm" onClick={signOut}>
+            Sign Out
           </Button>
         </div>
       </header>
@@ -186,10 +188,10 @@ export default function ProfilePage() {
         <Button
           variant={activeTab === "overview" ? "default" : "outline"}
           className={cn(
-            "rounded-full",
+            "rounded-full font-medium text-xs sm:text-sm",
             activeTab === "overview"
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "border-border/80 bg-card text-foreground hover:bg-muted",
           )}
           onClick={() => setActiveTab("overview")}
         >
@@ -198,10 +200,10 @@ export default function ProfilePage() {
         <Button
           variant={activeTab === "resume" ? "default" : "outline"}
           className={cn(
-            "rounded-full",
+            "rounded-full font-medium text-xs sm:text-sm",
             activeTab === "resume"
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "border-border/80 bg-card text-foreground hover:bg-muted",
           )}
           onClick={() => setActiveTab("resume")}
         >
@@ -212,38 +214,38 @@ export default function ProfilePage() {
       {activeTab === "overview" ? (
         <div className="grid gap-3 md:grid-cols-2">
           <Card className={surfaceCardClass}>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Academics</CardTitle>
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Academics</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm pt-4">
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Branch</span>
-                <span className="font-medium text-slate-900">{student.branch}</span>
+                <span className="text-muted-foreground">Branch</span>
+                <span className="font-medium text-card-foreground">{student.branch}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Phone</span>
-                <span className="font-medium text-slate-900">{student.phone}</span>
+                <span className="text-muted-foreground">Phone</span>
+                <span className="font-medium text-card-foreground">{student.phone}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">CGPA</span>
-                <span className="font-medium text-slate-900">{student.cgpa ?? "—"}</span>
+                <span className="text-muted-foreground">CGPA</span>
+                <span className="font-medium text-card-foreground">{student.cgpa ?? "—"}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Marks</span>
+                <span className="text-muted-foreground">Marks</span>
                 {student.cgpa_verified ? (
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 px-2 py-1 rounded-md ring-1 ring-green-100">Verified</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/20">Verified</span>
                 ) : (
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Unverified</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-1 rounded-md border border-border">Unverified</span>
                 )}
               </div>
               {marksheetUrl ? (
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Marksheet</span>
+                  <span className="text-muted-foreground">Marksheet</span>
                   <a
                     href={marksheetUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 underline"
+                    className="text-xs font-semibold text-primary hover:underline"
                   >
                     View document
                   </a>
@@ -253,34 +255,34 @@ export default function ProfilePage() {
           </Card>
 
           <Card className={surfaceCardClass}>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Overall score</CardTitle>
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Overall score</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-4">
-              <div className="text-4xl font-semibold tracking-tight text-slate-900">
-                {profile.overall_score.toFixed(1)} <span className="text-xl text-slate-400 font-medium">/ 100</span>
+              <div className="text-4xl font-semibold tracking-tight text-card-foreground">
+                {profile.overall_score.toFixed(1)} <span className="text-xl text-muted-foreground font-medium">/ 100</span>
               </div>
               <Progress value={profile.overall_score} className="h-2" />
             </CardContent>
           </Card>
 
           <Card className={`md:col-span-2 overflow-hidden ${surfaceCardClass}`}>
-            <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-emerald-50 via-white to-sky-50 pb-5">
+            <CardHeader className="border-b border-border/60 bg-muted/20 pb-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-base text-slate-900">
-                    <Route className="size-4 text-emerald-600" />
+                  <CardTitle className="flex items-center gap-2 text-base text-card-foreground">
+                    <Route className="size-4 text-primary" />
                     Placement readiness plan
                   </CardTitle>
-                  <CardDescription className="mt-1 text-slate-600">
+                  <CardDescription className="mt-1 text-muted-foreground">
                     Prioritized from your verified resume, coding, and academic evidence.
                   </CardDescription>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-semibold tracking-tight text-slate-900">
+                  <div className="text-3xl font-semibold tracking-tight text-card-foreground">
                     {profile.readiness.score.toFixed(1)}
                   </div>
-                  <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                  <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-xs font-semibold text-primary border border-border">
                     <CheckCircle2 className="size-3.5" />
                     {profile.readiness.level}
                   </div>
@@ -289,28 +291,28 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="grid gap-3 pt-4 md:grid-cols-2">
               {profile.readiness.actions.map((action, index) => (
-                <div key={`${action.category}-${action.title}`} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <div key={`${action.category}-${action.title}`} className="rounded-2xl border border-border/80 bg-muted/40 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         {index + 1}. {action.category}
                       </p>
-                      <h3 className="mt-1 font-semibold text-slate-900">{action.title}</h3>
+                      <h3 className="mt-1 font-semibold text-card-foreground">{action.title}</h3>
                     </div>
                     <span className={cn(
                       "rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider",
                       action.priority === "high"
-                        ? "bg-rose-100 text-rose-700"
+                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
                         : action.priority === "medium"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-700",
+                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                          : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
                     )}>
                       {action.priority}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm leading-5 text-slate-600">{action.reason}</p>
-                  <div className="mt-3 flex items-start gap-2 text-sm font-medium leading-5 text-slate-800">
-                    <ArrowUpRight className="mt-0.5 size-4 shrink-0 text-blue-600" />
+                  <p className="mt-2 text-sm leading-5 text-muted-foreground">{action.reason}</p>
+                  <div className="mt-3 flex items-start gap-2 text-sm font-medium leading-5 text-card-foreground">
+                    <ArrowUpRight className="mt-0.5 size-4 shrink-0 text-primary" />
                     {action.next_step}
                   </div>
                 </div>
@@ -319,65 +321,65 @@ export default function ProfilePage() {
           </Card>
 
           <Card className={surfaceCardClass}>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Placement status</CardTitle>
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Placement status</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm pt-4">
               {profile.placement?.is_active ? (
                 <>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500">Company</span>
-                    <span className="font-medium text-slate-900">{profile.placement.company_name}</span>
+                    <span className="text-muted-foreground">Company</span>
+                    <span className="font-medium text-card-foreground">{profile.placement.company_name}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500">Type</span>
-                    <span className="font-medium text-slate-900">{profile.placement.offer_type}</span>
+                    <span className="text-muted-foreground">Type</span>
+                    <span className="font-medium text-card-foreground">{profile.placement.offer_type}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500">Pay/Stipend</span>
-                    <span className="font-medium text-slate-900">{profile.placement.pay_amount ?? "—"}</span>
+                    <span className="text-muted-foreground">Pay/Stipend</span>
+                    <span className="font-medium text-card-foreground">{profile.placement.pay_amount ?? "—"}</span>
                   </div>
                   {profile.placement.notes && (
-                    <div className="pt-2 border-t border-slate-100 text-slate-600 mt-2">
+                    <div className="pt-2 border-t border-border/60 text-muted-foreground mt-2">
                       {profile.placement.notes}
                     </div>
                   )}
                 </>
               ) : (
-                <div className="text-slate-500">Not placed yet.</div>
+                <div className="text-muted-foreground">Not placed yet.</div>
               )}
             </CardContent>
           </Card>
 
           <Card className={`md:col-span-2 ${surfaceCardClass}`}>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Skills</CardTitle>
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Skills</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2 pt-4">
               {profile.skills.length ? (
                 profile.skills.map((s) => (
-                  <span key={s} className="bg-slate-100 text-slate-700 text-xs px-3 py-1.5 rounded-md font-medium">
+                  <span key={s} className="bg-muted text-foreground text-xs px-3 py-1.5 rounded-md font-medium border border-border/60">
                     {s}
                   </span>
                 ))
               ) : (
-                <span className="text-sm text-slate-500">No skills stored.</span>
+                <span className="text-sm text-muted-foreground">No skills stored.</span>
               )}
             </CardContent>
           </Card>
 
           <Card className={`md:col-span-2 ${surfaceCardClass}`}>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Coding</CardTitle>
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Coding</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm pt-4">
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Persona</span>
-                <span className="font-medium text-slate-900">{profile.coding.persona || "—"}</span>
+                <span className="text-muted-foreground">Persona</span>
+                <span className="font-medium text-card-foreground">{profile.coding.persona || "—"}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Score</span>
-                <span className="font-medium text-slate-900">{profile.coding.score.toFixed(1)}</span>
+                <span className="text-muted-foreground">Score</span>
+                <span className="font-medium text-card-foreground">{profile.coding.score.toFixed(1)}</span>
               </div>
             </CardContent>
           </Card>
@@ -385,65 +387,65 @@ export default function ProfilePage() {
       ) : (
         <div className="grid gap-3 lg:grid-cols-[minmax(320px,420px)_1fr] lg:h-[calc(100vh-10.5rem)]">
           <Card className={`flex h-full flex-col overflow-auto ${surfaceCardClass}`}>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Resume analysis</CardTitle>
-              <CardDescription className="text-slate-500">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Resume analysis</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 ATS-focused highlights from your latest submitted resume.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5 pt-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-500">ATS score</span>
-                  <span className="font-semibold text-slate-900">{profile.overall_score.toFixed(1)} <span className="text-slate-400 font-normal">/ 100</span></span>
+                  <span className="text-muted-foreground">ATS score</span>
+                  <span className="font-semibold text-card-foreground">{profile.overall_score.toFixed(1)} <span className="text-muted-foreground font-normal">/ 100</span></span>
                 </div>
                 <Progress value={profile.overall_score} className="h-2" />
               </div>
 
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Coding score</span>
-                  <span className="font-medium text-slate-900">{profile.coding.score.toFixed(1)}</span>
+                  <span className="text-muted-foreground">Coding score</span>
+                  <span className="font-medium text-card-foreground">{profile.coding.score.toFixed(1)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Persona</span>
-                  <span className="font-medium text-slate-900">{profile.coding.persona || "—"}</span>
+                  <span className="text-muted-foreground">Persona</span>
+                  <span className="font-medium text-card-foreground">{profile.coding.persona || "—"}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Skills captured</span>
-                  <span className="font-medium text-slate-900">{profile.skills.length}</span>
+                  <span className="text-muted-foreground">Skills captured</span>
+                  <span className="font-medium text-card-foreground">{profile.skills.length}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Last analyzed</span>
-                  <span className="font-medium text-slate-900">{lastAnalyzedLabel}</span>
+                  <span className="text-muted-foreground">Last analyzed</span>
+                  <span className="font-medium text-card-foreground">{lastAnalyzedLabel}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <p className="text-sm text-slate-500">Top extracted skills</p>
+                <p className="text-sm text-muted-foreground">Top extracted skills</p>
                 <div className="flex flex-wrap gap-2">
                   {topSkills.length ? (
                     topSkills.map((skill) => (
-                      <span key={skill} className="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-medium">
+                      <span key={skill} className="bg-muted text-foreground text-xs px-2.5 py-1 rounded-md font-medium border border-border/60">
                         {skill}
                       </span>
                     ))
                   ) : (
-                    <span className="text-sm text-slate-500">No skills extracted yet.</span>
+                    <span className="text-sm text-muted-foreground">No skills extracted yet.</span>
                   )}
                 </div>
               </div>
 
-              <Link href="/dashboard" className={cn(buttonVariants(), "w-full bg-blue-600 text-white hover:bg-blue-700 rounded-full")}>
+              <Link href="/dashboard" className={cn(buttonVariants(), "w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-full font-medium")}>
                 Update Resume
               </Link>
             </CardContent>
           </Card>
 
           <Card className={`flex h-full flex-col overflow-hidden ${surfaceCardClass}`}>
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Resume preview</CardTitle>
-              <CardDescription className="text-slate-500">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Resume preview</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Preview your saved resume. If the preview is unavailable, open it in a new tab.
               </CardDescription>
             </CardHeader>
@@ -452,19 +454,19 @@ export default function ProfilePage() {
                 <>
                   <ResumePdfViewer
                     url={resumePreviewUrl}
-                    className="flex-1 min-h-0 rounded-xl border border-slate-200 overflow-hidden"
+                    className="flex-1 min-h-0 rounded-xl border border-border/80 overflow-hidden"
                   />
                   <a
                     href={resumeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={cn(buttonVariants({ variant: "outline" }), "shrink-0 rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50")}
+                    className={cn(buttonVariants({ variant: "outline" }), "shrink-0 rounded-full border-border/80 bg-card text-card-foreground hover:bg-muted font-medium")}
                   >
                     Open in new tab
                   </a>
                 </>
               ) : (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+                <div className="rounded-xl border border-border/80 bg-muted/40 p-4 text-sm text-muted-foreground">
                   No resume URL found for this profile yet.
                 </div>
               )}

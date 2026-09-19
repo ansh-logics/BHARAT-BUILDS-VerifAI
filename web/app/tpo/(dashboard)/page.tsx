@@ -24,6 +24,7 @@ import {
 import { getApiErrorMessage, getTpoOverview, listTpoGroups } from "@/lib/api";
 import { clearTpoAuth, getStoredTpoToken } from "@/lib/auth-storage";
 import type { TpoGroup, TpoOverviewResponse } from "@/lib/types";
+import { PaletteSwitcher } from "@/components/theme/palette-switcher";
 
 type CandidateItem = {
   id: string;
@@ -234,33 +235,33 @@ export default function TpoDashboardRootPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 w-full h-full pb-16 space-y-6 bg-[#F4F5F7] text-[#11142D]">
-      {/* Top Navigation Header (Matching Stitch Insp) */}
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 w-full h-full pb-16 space-y-6 bg-background text-foreground transition-colors">
+      {/* Top Navigation Header */}
       <header className="flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Logo and Page Title */}
         <div className="flex items-center gap-4 w-full md:w-auto">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#1A1D1F] flex items-center justify-center text-white shadow-xs">
-              <Sparkles className="size-5 text-blue-400" />
+            <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-xs">
+              <Sparkles className="size-5" />
             </div>
             <div className="hidden sm:block">
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-xl tracking-tight text-[#11142D]">VerifAI</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                <span className="font-extrabold text-xl tracking-tight text-foreground">VerifAI</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
                   TPO AI
                 </span>
               </div>
             </div>
           </div>
-          <h1 className="text-xl lg:text-2xl font-bold text-[#11142D] tracking-tight">
+          <h1 className="text-xl lg:text-2xl font-bold text-foreground tracking-tight">
             AI Screening &amp; Match
           </h1>
         </div>
 
-        {/* Search, Action Buttons & User Profile (Stitch Pill Treatment) */}
+        {/* Search, Action Buttons & User Profile */}
         <div className="flex items-center gap-2.5 flex-1 justify-end w-full md:w-auto">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 size-4" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground size-4" />
             <input
               type="text"
               value={searchQuery}
@@ -271,21 +272,23 @@ export default function TpoDashboardRootPage() {
                 }
               }}
               placeholder="Search candidates, skills, cohorts..."
-              className="w-full bg-white text-xs lg:text-sm text-slate-800 placeholder-slate-400 pl-10 pr-4 py-2 rounded-full border border-slate-200/80 shadow-xs focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all"
+              className="w-full bg-card text-xs lg:text-sm text-foreground placeholder:text-muted-foreground pl-10 pr-4 py-2 rounded-full border border-border/80 shadow-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
           </div>
 
           <button
             onClick={() => router.push("/tpo/ai-search")}
-            className="bg-[#1A1D1F] hover:bg-black text-white text-xs lg:text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-1.5 shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] shrink-0 cursor-pointer"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs lg:text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-1.5 shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] shrink-0 cursor-pointer"
           >
             <Zap className="size-3.5 text-amber-400" />
             <span>Screen JD</span>
           </button>
 
+          <PaletteSwitcher variant="minimal" />
+
           <div
             title="Placement Cycle Active"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200/80 text-emerald-700 text-xs font-semibold shadow-xs"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-border/80 text-emerald-700 text-xs font-semibold shadow-xs"
           >
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Active</span>
@@ -302,11 +305,11 @@ export default function TpoDashboardRootPage() {
         {/* Top Bento Row: Overview (7 Cols) + Top Matched Profiles (5 Cols) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           {/* Bento Card 1: Overview & Verified Numbers */}
-          <div className="lg:col-span-7 bg-white rounded-3xl p-6 md:p-7 shadow-[0_12px_36px_-8px_rgba(0,0,0,0.04)] border border-white flex flex-col justify-between gap-6">
+          <div className="lg:col-span-7 bg-card text-card-foreground rounded-3xl p-6 md:p-7 shadow-xs border border-border/80 flex flex-col justify-between gap-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-[#11142D] tracking-tight">Overview</h2>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">
+                <h2 className="text-xl font-bold text-card-foreground tracking-tight">Overview</h2>
+                <p className="text-xs text-muted-foreground font-medium mt-0.5">
                   Fall 2025–26 Placement Screening Cycle
                 </p>
               </div>
@@ -314,7 +317,7 @@ export default function TpoDashboardRootPage() {
                 value={selectedCohort}
                 onChange={(e) => setSelectedCohort(e.target.value)}
                 aria-label="Filter by placement cohort"
-                className="text-xs font-semibold text-slate-700 bg-[#F8F9FA] hover:bg-slate-100 px-3.5 py-1.5 rounded-full border border-slate-200 transition-colors cursor-pointer"
+                className="text-xs font-semibold text-foreground bg-muted hover:bg-muted/80 px-3.5 py-1.5 rounded-full border border-border transition-colors cursor-pointer"
               >
                 <option value="Class of 2026">Class of 2026</option>
                 <option value="Class of 2025">Class of 2025</option>
@@ -325,49 +328,49 @@ export default function TpoDashboardRootPage() {
             {/* Sub-Tiles */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Tile 1: Registered Students */}
-              <div className="bg-[#F8F9FA] rounded-2xl p-5 border border-slate-100 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-3">
+              <div className="bg-muted/40 rounded-2xl p-5 border border-border/60 flex flex-col justify-between">
+                <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-3">
                   <div className="flex items-center gap-1.5">
-                    <User className="size-4 text-slate-400" />
+                    <User className="size-4 text-muted-foreground" />
                     <span>Registered Students</span>
                   </div>
-                  <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold text-[11px]">
+                  <div className="flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold text-[11px] border border-emerald-500/20">
                     <span>↑ 12.4%</span>
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-extrabold tracking-tight text-[#11142D]">
+                  <span className="text-4xl font-extrabold tracking-tight text-card-foreground">
                     {overview?.total_students ?? 1420}
                   </span>
-                  <span className="text-xs text-slate-400 font-medium">verified profiles</span>
+                  <span className="text-xs text-muted-foreground font-medium">verified profiles</span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
-                  <ShieldCheck className="size-3 text-emerald-600" />
+                <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
+                  <ShieldCheck className="size-3 text-emerald-600 dark:text-emerald-400" />
                   <span>100% authenticated by university registrar</span>
                 </p>
               </div>
 
               {/* Tile 2: Eligible Active Pool */}
-              <div className="bg-[#F8F9FA] rounded-2xl p-5 border border-slate-100 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-xs text-slate-500 font-semibold mb-3">
+              <div className="bg-muted/40 rounded-2xl p-5 border border-border/60 flex flex-col justify-between">
+                <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-3">
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="size-4 text-emerald-600" />
+                    <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Eligible Active Pool</span>
                   </div>
-                  <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold text-[11px]">
+                  <div className="flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold text-[11px] border border-emerald-500/20">
                     <span>↑ 36.8%</span>
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-extrabold tracking-tight text-[#11142D]">
+                  <span className="text-4xl font-extrabold tracking-tight text-card-foreground">
                     {overview?.unplaced_eligible_students ?? 845}
                   </span>
-                  <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
                     0 Backlogs
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
-                  <TrendingUp className="size-3 text-blue-600" />
+                <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
+                  <TrendingUp className="size-3 text-primary" />
                   <span>59.5% ready for immediate recruiter dispatch</span>
                 </p>
               </div>
@@ -375,12 +378,12 @@ export default function TpoDashboardRootPage() {
           </div>
 
           {/* Bento Card 2: Top Matched Profiles */}
-          <div className="lg:col-span-5 bg-white rounded-3xl p-6 shadow-[0_12px_36px_-8px_rgba(0,0,0,0.04)] border border-white flex flex-col justify-between gap-5">
+          <div className="lg:col-span-5 bg-card text-card-foreground rounded-3xl p-6 shadow-xs border border-border/80 flex flex-col justify-between gap-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-[#11142D] tracking-tight">
+              <h3 className="text-base font-bold text-card-foreground tracking-tight">
                 Top Matched Profiles
               </h3>
-              <span className="text-xs text-slate-400 font-medium">Ranked</span>
+              <span className="text-xs text-muted-foreground font-medium">Ranked</span>
             </div>
 
             <div className="space-y-3.5">
@@ -388,7 +391,7 @@ export default function TpoDashboardRootPage() {
                 <div
                   key={c.id}
                   onClick={() => setActiveProfileModal(c)}
-                  className="flex items-center justify-between gap-3 group cursor-pointer p-1.5 rounded-2xl hover:bg-slate-50 transition-colors"
+                  className="flex items-center justify-between gap-3 group cursor-pointer p-1.5 rounded-2xl hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -397,15 +400,15 @@ export default function TpoDashboardRootPage() {
                       {c.initials}
                     </div>
                     <div>
-                      <h4 className="font-bold text-xs text-[#11142D] group-hover:text-blue-600 transition-colors">
+                      <h4 className="font-bold text-xs text-card-foreground group-hover:text-primary transition-colors">
                         {c.name}
                       </h4>
-                      <p className="text-[11px] text-slate-400">{c.branch}</p>
+                      <p className="text-[11px] text-muted-foreground">{c.branch}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-extrabold text-[#11142D]">{c.matchScore}% Match</p>
-                    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                    <p className="text-xs font-extrabold text-card-foreground">{c.matchScore}% Match</p>
+                    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                       Active
                     </span>
                   </div>
@@ -415,7 +418,7 @@ export default function TpoDashboardRootPage() {
 
             <button
               onClick={() => router.push("/tpo/ai-search")}
-              className="w-full py-2.5 rounded-full bg-[#F8F9FA] hover:bg-slate-100 text-[#11142D] font-bold text-xs transition-colors text-center border border-slate-200/80 cursor-pointer"
+              className="w-full py-2.5 rounded-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-bold text-xs transition-colors text-center border border-border/80 cursor-pointer"
             >
               View All 64 Matched Profiles
             </button>
@@ -423,23 +426,23 @@ export default function TpoDashboardRootPage() {
         </div>
 
         {/* Bento Card 3: AI Job Description Analyzer (Interactive Search Bar) */}
-        <div className="w-full bg-white rounded-3xl p-6 md:p-7 shadow-[0_12px_36px_-8px_rgba(0,0,0,0.04)] border border-white flex flex-col gap-4">
+        <div className="w-full bg-card text-card-foreground rounded-3xl p-6 md:p-7 shadow-xs border border-border/80 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-xl bg-black text-white flex items-center justify-center text-sm font-bold shadow-xs">
+              <span className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shadow-xs">
                 ✦
               </span>
               <div>
-                <h3 className="text-base font-bold text-[#11142D] tracking-tight">
+                <h3 className="text-base font-bold text-card-foreground tracking-tight">
                   AI Job Description Analyzer
                 </h3>
-                <p className="text-xs text-slate-400 font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                   Parse employer criteria, auto-match qualifying cohorts &amp; filter zero-backlog candidates
                 </p>
               </div>
             </div>
             <div className="hidden sm:flex items-center gap-2">
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 Live Parser v2.4
               </span>
             </div>
@@ -447,7 +450,7 @@ export default function TpoDashboardRootPage() {
 
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
             <div className="relative flex-1 w-full">
-              <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 size-5" />
+              <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-5" />
               <input
                 type="text"
                 value={jdPrompt}
@@ -457,27 +460,27 @@ export default function TpoDashboardRootPage() {
                     router.push(`/tpo/ai-search?q=${encodeURIComponent(jdPrompt)}`);
                   }
                 }}
-                className="w-full bg-[#F8F9FA] rounded-2xl border border-slate-200 text-xs sm:text-sm pl-11 pr-4 py-3.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all font-medium"
+                className="w-full bg-muted/40 rounded-2xl border border-border text-xs sm:text-sm pl-11 pr-4 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
               />
             </div>
             <button
               onClick={() => router.push(`/tpo/ai-search?q=${encodeURIComponent(jdPrompt)}`)}
-              className="w-full sm:w-auto bg-[#1A1D1F] hover:bg-black text-white text-xs sm:text-sm font-semibold px-8 py-3.5 rounded-2xl shrink-0 flex items-center justify-center gap-2.5 shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold px-8 py-3.5 rounded-2xl shrink-0 flex items-center justify-center gap-2.5 shadow-xs transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
             >
-              <Zap className="size-4 text-emerald-400" />
+              <Zap className="size-4 text-primary-foreground" />
               <span>Match &amp; Rank</span>
             </button>
           </div>
         </div>
 
         {/* Bento Card 4: Shortlisted Match Results Table (Centerpiece) */}
-        <div className="w-full bg-white rounded-3xl p-6 md:p-7 shadow-[0_12px_36px_-8px_rgba(0,0,0,0.04)] border border-white flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-100">
+        <div className="w-full bg-card text-card-foreground rounded-3xl p-6 md:p-7 shadow-xs border border-border/80 flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-border/60">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-bold text-[#11142D] tracking-tight">
+              <h2 className="text-lg font-bold text-card-foreground tracking-tight">
                 Shortlisted Match Results
               </h2>
-              <span className="bg-emerald-50 text-emerald-700 font-bold text-xs px-2.5 py-1 rounded-full border border-emerald-100">
+              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs px-2.5 py-1 rounded-full border border-emerald-500/20">
                 {filteredCandidates.length} Qualified
               </span>
             </div>
@@ -488,8 +491,8 @@ export default function TpoDashboardRootPage() {
                 onClick={() => setSelectedFilter("all")}
                 className={`px-3.5 py-1.5 rounded-full font-semibold text-xs transition-all cursor-pointer ${
                   selectedFilter === "all"
-                    ? "bg-black text-white shadow-xs"
-                    : "bg-[#F8F9FA] hover:bg-slate-100 text-slate-700"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
                 }`}
               >
                 SDE Tier-1
@@ -498,8 +501,8 @@ export default function TpoDashboardRootPage() {
                 onClick={() => setSelectedFilter("cgpa8")}
                 className={`px-3.5 py-1.5 rounded-full font-semibold text-xs transition-all cursor-pointer ${
                   selectedFilter === "cgpa8"
-                    ? "bg-black text-white shadow-xs"
-                    : "bg-[#F8F9FA] hover:bg-slate-100 text-slate-700"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Min CGPA 8.8+
@@ -508,8 +511,8 @@ export default function TpoDashboardRootPage() {
                 onClick={() => setSelectedFilter("zeroBacklogs")}
                 className={`px-3.5 py-1.5 rounded-full font-semibold text-xs transition-all cursor-pointer ${
                   selectedFilter === "zeroBacklogs"
-                    ? "bg-black text-white shadow-xs"
-                    : "bg-[#F8F9FA] hover:bg-slate-100 text-slate-700"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
                 }`}
               >
                 0 Backlogs
@@ -521,14 +524,14 @@ export default function TpoDashboardRootPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                <tr className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border/60">
                   <th className="py-3 pl-2 pr-3 w-8">
                     <input
                       type="checkbox"
                       checked={selectedCandidates.size === filteredCandidates.length && filteredCandidates.length > 0}
                       onChange={toggleAllCandidates}
                       aria-label="Select all candidates"
-                      className="rounded border-slate-300 text-black focus:ring-black/20 cursor-pointer"
+                      className="rounded border-input text-primary focus:ring-primary/20 cursor-pointer"
                     />
                   </th>
                   <th className="py-3 px-3">Candidate</th>
@@ -539,16 +542,16 @@ export default function TpoDashboardRootPage() {
                   <th className="py-3 pr-2 pl-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-border/60 text-card-foreground">
                 {filteredCandidates.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50/70 transition-colors group">
+                  <tr key={c.id} className="hover:bg-muted/30 transition-colors group">
                     <td className="py-3.5 pl-2 pr-3">
                       <input
                         type="checkbox"
                         checked={selectedCandidates.has(c.id)}
                         onChange={() => toggleCandidate(c.id)}
                         aria-label={`Select candidate ${c.name}`}
-                        className="rounded border-slate-300 text-black focus:ring-black/20 cursor-pointer"
+                        className="rounded border-input text-primary focus:ring-primary/20 cursor-pointer"
                       />
                     </td>
                     <td className="py-3.5 px-3">
@@ -560,7 +563,7 @@ export default function TpoDashboardRootPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-[#11142D] group-hover:text-blue-600 transition-colors">
+                            <span className="font-bold text-card-foreground group-hover:text-primary transition-colors">
                               {c.name}
                             </span>
                             <span title="Registrar Verified">
@@ -568,26 +571,26 @@ export default function TpoDashboardRootPage() {
                             </span>
                           </div>
 
-                          <p className="text-[11px] text-slate-400">
+                          <p className="text-[11px] text-muted-foreground">
                             Roll: {c.rollNo} • {c.gender}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="py-3.5 px-3">
-                      <span className="font-medium text-slate-800 text-xs">{c.branch}</span>
-                      <p className="text-[11px] text-slate-400">{c.batch}</p>
+                      <span className="font-medium text-foreground text-xs">{c.branch}</span>
+                      <p className="text-[11px] text-muted-foreground">{c.batch}</p>
                     </td>
                     <td className="py-3.5 px-3">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-extrabold text-[#11142D]">{c.cgpa}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-100">
+                        <span className="font-extrabold text-card-foreground">{c.cgpa}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
                           0 Backlog
                         </span>
                       </div>
                     </td>
                     <td className="py-3.5 px-3">
-                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E8F8F0] text-[#18A058] font-bold text-xs">
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20">
                         <span>{c.matchLabel}</span>
                       </div>
                     </td>
@@ -596,7 +599,7 @@ export default function TpoDashboardRootPage() {
                         {c.skills.map((skill, i) => (
                           <span
                             key={i}
-                            className="px-2 py-0.5 text-[10px] font-semibold bg-[#F8F9FA] text-slate-700 rounded-md border border-slate-100"
+                            className="px-2 py-0.5 text-[10px] font-semibold bg-muted text-foreground rounded-md border border-border/60"
                           >
                             {skill}
                           </span>
@@ -606,7 +609,7 @@ export default function TpoDashboardRootPage() {
                     <td className="py-3.5 pr-2 pl-3 text-right">
                       <button
                         onClick={() => setActiveProfileModal(c)}
-                        className="bg-[#F8F9FA] hover:bg-black hover:text-white text-slate-700 font-semibold text-xs px-3.5 py-1.5 rounded-full transition-all border border-slate-200/80 cursor-pointer"
+                        className="bg-secondary hover:bg-secondary/80 text-secondary-foreground font-semibold text-xs px-3.5 py-1.5 rounded-full transition-all border border-border/80 cursor-pointer"
                       >
                         Profile
                       </button>
@@ -618,24 +621,24 @@ export default function TpoDashboardRootPage() {
           </div>
 
           {/* Table Footer / Pagination */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs text-slate-500">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs text-muted-foreground">
             <p>
-              Showing <strong className="text-black font-semibold">1 – {filteredCandidates.length}</strong> of{" "}
-              <strong className="text-black font-semibold">64</strong> candidates
+              Showing <strong className="text-foreground font-semibold">1 – {filteredCandidates.length}</strong> of{" "}
+              <strong className="text-foreground font-semibold">64</strong> candidates
             </p>
             <div className="flex items-center gap-1">
-              <button className="px-3 py-1 rounded-full bg-black text-white font-bold cursor-pointer">
+              <button className="px-3 py-1 rounded-full bg-primary text-primary-foreground font-bold cursor-pointer">
                 1
               </button>
-              <button className="px-3 py-1 rounded-full bg-[#F8F9FA] hover:bg-slate-200 text-slate-700 font-medium cursor-pointer">
+              <button className="px-3 py-1 rounded-full bg-muted hover:bg-muted/80 text-foreground font-medium cursor-pointer">
                 2
               </button>
-              <button className="px-3 py-1 rounded-full bg-[#F8F9FA] hover:bg-slate-200 text-slate-700 font-medium cursor-pointer">
+              <button className="px-3 py-1 rounded-full bg-muted hover:bg-muted/80 text-foreground font-medium cursor-pointer">
                 3
               </button>
               <button
                 onClick={() => router.push("/tpo/ai-search")}
-                className="px-3 py-1 rounded-full bg-[#F8F9FA] hover:bg-slate-200 text-slate-700 font-medium cursor-pointer"
+                className="px-3 py-1 rounded-full bg-muted hover:bg-muted/80 text-foreground font-medium cursor-pointer"
               >
                 Next →
               </button>
@@ -644,27 +647,27 @@ export default function TpoDashboardRootPage() {
         </div>
 
         {/* Bento Card 5: Placement Screening Velocity Chart */}
-        <div className="w-full bg-white rounded-3xl p-6 md:p-7 shadow-[0_12px_36px_-8px_rgba(0,0,0,0.04)] border border-white flex flex-col justify-between">
+        <div className="w-full bg-card text-card-foreground rounded-3xl p-6 md:p-7 shadow-xs border border-border/80 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-lg font-bold text-[#11142D] tracking-tight">
+              <h3 className="text-lg font-bold text-card-foreground tracking-tight">
                 Placement Screening Velocity
               </h3>
-              <p className="text-xs text-slate-400">Total matched student volume evaluated over past 7 days</p>
+              <p className="text-xs text-muted-foreground">Total matched student volume evaluated over past 7 days</p>
             </div>
-            <button className="flex items-center gap-1.5 bg-[#F8F9FA] hover:bg-slate-100 text-xs font-semibold text-slate-700 px-3.5 py-1.5 rounded-full border border-slate-200 transition-colors cursor-pointer">
+            <button className="flex items-center gap-1.5 bg-muted hover:bg-muted/80 text-xs font-semibold text-foreground px-3.5 py-1.5 rounded-full border border-border transition-colors cursor-pointer">
               <span>Last 7 days</span>
-              <ChevronRight className="size-3.5 text-slate-400 rotate-90" />
+              <ChevronRight className="size-3.5 text-muted-foreground rotate-90" />
             </button>
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pt-6">
             <div className="mb-2">
-              <span className="text-3xl md:text-5xl font-extrabold text-slate-300 tracking-tight">
+              <span className="text-3xl md:text-5xl font-extrabold text-foreground/40 tracking-tight">
                 {overview?.total_students ?? 1420}
-                <span className="text-sm md:text-base font-semibold text-slate-400 ml-1">profiles</span>
+                <span className="text-sm md:text-base font-semibold text-muted-foreground ml-1">profiles</span>
               </span>
-              <p className="text-xs text-emerald-600 font-bold mt-1 flex items-center gap-1.5">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-1 flex items-center gap-1.5">
                 <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>Peak shortlisting speed: 280 profiles/hour</span>
               </p>
@@ -673,36 +676,36 @@ export default function TpoDashboardRootPage() {
             {/* Stylized Weekly Velocity Bars */}
             <div className="flex items-end gap-3 sm:gap-4 h-36 sm:h-44 pb-1 self-center sm:self-auto">
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-slate-200/70 rounded-full h-16" />
-                <span className="text-[10px] text-slate-400 font-semibold">Mon</span>
+                <div className="w-6 sm:w-10 bg-muted rounded-full h-16" />
+                <span className="text-[10px] text-muted-foreground font-semibold">Mon</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-slate-200/70 rounded-full h-24" />
-                <span className="text-[10px] text-slate-400 font-semibold">Tue</span>
+                <div className="w-6 sm:w-10 bg-muted rounded-full h-24" />
+                <span className="text-[10px] text-muted-foreground font-semibold">Tue</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-slate-200/70 rounded-full h-20" />
-                <span className="text-[10px] text-slate-400 font-semibold">Wed</span>
+                <div className="w-6 sm:w-10 bg-muted rounded-full h-20" />
+                <span className="text-[10px] text-muted-foreground font-semibold">Wed</span>
               </div>
               <div className="flex flex-col items-center gap-1.5 relative">
-                <div className="absolute -top-7 bg-black text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+                <div className="absolute -top-7 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
                   <span className="size-1.5 rounded-full bg-emerald-400" />
                   <span>648</span>
                 </div>
-                <div className="w-6 sm:w-10 bg-gradient-to-t from-emerald-500 to-emerald-400 rounded-full h-36 shadow-xs" />
-                <span className="text-[10px] text-black font-bold">Thu</span>
+                <div className="w-6 sm:w-10 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-full h-36 shadow-xs" />
+                <span className="text-[10px] text-foreground font-bold">Thu</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-slate-200/70 rounded-full h-28" />
-                <span className="text-[10px] text-slate-400 font-semibold">Fri</span>
+                <div className="w-6 sm:w-10 bg-muted rounded-full h-28" />
+                <span className="text-[10px] text-muted-foreground font-semibold">Fri</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-slate-200/70 rounded-full h-16" />
-                <span className="text-[10px] text-slate-400 font-semibold">Sat</span>
+                <div className="w-6 sm:w-10 bg-muted rounded-full h-16" />
+                <span className="text-[10px] text-muted-foreground font-semibold">Sat</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-slate-200/70 rounded-full h-32" />
-                <span className="text-[10px] text-slate-400 font-semibold">Sun</span>
+                <div className="w-6 sm:w-10 bg-muted rounded-full h-32" />
+                <span className="text-[10px] text-muted-foreground font-semibold">Sun</span>
               </div>
             </div>
           </div>
@@ -711,8 +714,8 @@ export default function TpoDashboardRootPage() {
 
       {/* Candidate Profile Quick View Modal */}
       {activeProfileModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-200 space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-card text-card-foreground rounded-3xl max-w-lg w-full p-6 shadow-xl border border-border/80 space-y-5">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div
@@ -722,46 +725,46 @@ export default function TpoDashboardRootPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h3 className="font-bold text-base text-[#11142D]">
+                    <h3 className="font-bold text-base text-card-foreground">
                       {activeProfileModal.name}
                     </h3>
                     <CheckCircle2 className="size-4 text-emerald-500" />
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground">
                     Roll: {activeProfileModal.rollNo} • {activeProfileModal.email}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setActiveProfileModal(null)}
-                className="size-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer"
+                className="size-8 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center text-muted-foreground cursor-pointer"
               >
                 <X className="size-4" />
               </button>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-[#F8F9FA] rounded-2xl p-3 border border-slate-100">
-                <p className="text-slate-400 font-medium">Branch &amp; Batch</p>
-                <p className="font-bold text-slate-900 mt-0.5">{activeProfileModal.branch}</p>
-                <p className="text-slate-500 text-[11px]">{activeProfileModal.batch}</p>
+              <div className="bg-muted/40 rounded-2xl p-3 border border-border/60">
+                <p className="text-muted-foreground font-medium">Branch &amp; Batch</p>
+                <p className="font-bold text-card-foreground mt-0.5">{activeProfileModal.branch}</p>
+                <p className="text-muted-foreground text-[11px]">{activeProfileModal.batch}</p>
               </div>
-              <div className="bg-[#F8F9FA] rounded-2xl p-3 border border-slate-100">
-                <p className="text-slate-400 font-medium">Verified CGPA</p>
-                <p className="font-bold text-slate-900 mt-0.5">{activeProfileModal.cgpa}</p>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-100 mt-1 inline-block">
+              <div className="bg-muted/40 rounded-2xl p-3 border border-border/60">
+                <p className="text-muted-foreground font-medium">Verified CGPA</p>
+                <p className="font-bold text-card-foreground mt-0.5">{activeProfileModal.cgpa}</p>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20 mt-1 inline-block">
                   0 Backlogs
                 </span>
               </div>
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-slate-700 mb-2">Verified Technical Skills</p>
+              <p className="text-xs font-semibold text-card-foreground mb-2">Verified Technical Skills</p>
               <div className="flex flex-wrap gap-1.5">
                 {activeProfileModal.skills.map((skill, i) => (
                   <span
                     key={i}
-                    className="px-2.5 py-1 text-xs font-semibold bg-slate-100 text-slate-800 rounded-lg border border-slate-200/80"
+                    className="px-2.5 py-1 text-xs font-semibold bg-muted text-foreground rounded-lg border border-border/60"
                   >
                     {skill}
                   </span>
@@ -769,16 +772,16 @@ export default function TpoDashboardRootPage() {
               </div>
             </div>
 
-            <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+            <div className="pt-2 flex items-center justify-end gap-2 border-t border-border/60">
               <button
                 onClick={() => setActiveProfileModal(null)}
-                className="px-4 py-2 rounded-full text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                className="px-4 py-2 rounded-full text-xs font-semibold text-muted-foreground hover:bg-muted cursor-pointer"
               >
                 Close
               </button>
               <button
                 onClick={() => router.push(`/tpo/ai-search?q=${encodeURIComponent(activeProfileModal.name)}`)}
-                className="px-5 py-2 rounded-full text-xs font-semibold bg-black text-white hover:bg-slate-800 flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2 rounded-full text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-1.5 cursor-pointer"
               >
                 <span>Full Profile</span>
                 <ExternalLink className="size-3.5" />

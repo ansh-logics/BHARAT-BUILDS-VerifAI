@@ -169,11 +169,11 @@ export default function TpoReportsPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 rounded-[2rem] w-full h-full pb-10">
+    <div className="flex-1 overflow-y-auto p-8 rounded-[2rem] w-full h-full pb-10 bg-background">
       <div className="mx-auto w-full max-w-7xl space-y-8">
-        <div className="rounded-3xl border border-slate-200/60 bg-white p-6 shadow-sm">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">TPO Reports</h1>
-          <p className="mt-1 text-sm text-slate-600">
+        <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-sm">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">TPO Reports</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Generate authority-ready reports and export in PDF, DOCX, CSV, or XLSX.
           </p>
           <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-6">
@@ -185,18 +185,18 @@ export default function TpoReportsPage() {
                   setSelectedGroupId(null);
                 }}
                 placeholder="Search group by name"
-                className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                className="h-9 rounded-full bg-muted/50 border-input hover:bg-muted px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground"
               />
               {groupSearch.trim() ? (
-                <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+                <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-2xl border border-border bg-popover text-popover-foreground shadow-md">
                   {filteredGroups.length === 0 ? (
-                    <p className="px-3 py-2 text-xs text-slate-500">No groups found</p>
+                    <p className="px-3 py-2 text-xs text-muted-foreground">No groups found</p>
                   ) : (
                     filteredGroups.map((group) => (
                       <button
                         key={group.id}
                         type="button"
-                        className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                        className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted/60 transition-colors"
                         onClick={() => {
                           setGroupSearch(group.title);
                           setSelectedGroupId(group.id);
@@ -213,18 +213,18 @@ export default function TpoReportsPage() {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+              className="h-9 rounded-full bg-muted/50 border-input hover:bg-muted px-4 text-sm font-medium text-foreground"
             />
             <Input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+              className="h-9 rounded-full bg-muted/50 border-input hover:bg-muted px-4 text-sm font-medium text-foreground"
             />
             <select
               value={branch}
               onChange={(e) => setBranch(e.target.value)}
-              className="h-9 w-full rounded-full bg-slate-50 border border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              className="h-9 w-full rounded-full bg-muted/50 border border-input hover:bg-muted px-4 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
             >
               <option value="">All Branches</option>
               {branchOptions.map((b) => (
@@ -236,7 +236,7 @@ export default function TpoReportsPage() {
             <Button
               onClick={() => void loadPreview()}
               disabled={loading}
-              className="h-9 rounded-full px-5 bg-blue-600 hover:bg-blue-700 text-white"
+              className="h-9 rounded-full px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
             >
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Refresh Preview
@@ -245,54 +245,54 @@ export default function TpoReportsPage() {
         </div>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm">
             <CardHeader className="pb-2 pt-5 px-5">
-              <CardTitle className="text-sm font-medium text-slate-500">Total Students</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Students</CardTitle>
             </CardHeader>
             <CardContent className="px-5 pb-5">
-              <p className="text-4xl font-semibold tracking-tight text-slate-900">{overview?.total_students ?? 0}</p>
+              <p className="text-4xl font-semibold tracking-tight text-foreground">{overview?.total_students ?? 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm">
             <CardHeader className="pb-2 pt-5 px-5">
-              <CardTitle className="text-sm font-medium text-slate-500">Unplaced Eligible</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Unplaced Eligible</CardTitle>
             </CardHeader>
             <CardContent className="px-5 pb-5">
-              <p className="text-4xl font-semibold tracking-tight text-slate-900">{overview?.unplaced_eligible_students ?? 0}</p>
+              <p className="text-4xl font-semibold tracking-tight text-foreground">{overview?.unplaced_eligible_students ?? 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm">
             <CardHeader className="pb-2 pt-5 px-5">
-              <CardTitle className="text-sm font-medium text-slate-500">Active Groups</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Active Groups</CardTitle>
             </CardHeader>
             <CardContent className="px-5 pb-5">
-              <p className="text-4xl font-semibold tracking-tight text-slate-900">{overview?.active_groups ?? 0}</p>
+              <p className="text-4xl font-semibold tracking-tight text-foreground">{overview?.active_groups ?? 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm">
             <CardHeader className="pb-2 pt-5 px-5">
-              <CardTitle className="text-sm font-medium text-slate-500">Placed Students</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Placed Students</CardTitle>
             </CardHeader>
             <CardContent className="px-5 pb-5">
-              <p className="text-4xl font-semibold tracking-tight text-slate-900">{overview?.placed_students ?? 0}</p>
+              <p className="text-4xl font-semibold tracking-tight text-foreground">{overview?.placed_students ?? 0}</p>
             </CardContent>
           </Card>
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm">
             <CardHeader className="pb-2 pt-5 px-5">
-              <CardTitle className="text-sm font-medium text-slate-500">Internships</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Internships</CardTitle>
             </CardHeader>
             <CardContent className="px-5 pb-5">
-              <p className="text-4xl font-semibold tracking-tight text-slate-900">{internshipCount}</p>
+              <p className="text-4xl font-semibold tracking-tight text-foreground">{internshipCount}</p>
             </CardContent>
           </Card>
         </section>
 
-        <div className="rounded-3xl border border-slate-200/60 bg-white p-6 shadow-sm">
+        <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-sm">
           <div className="flex flex-wrap items-center gap-2">
             <Button
               onClick={() => void handleExport("pdf")}
               disabled={Boolean(exportingFormat)}
-              className="h-9 rounded-full px-4 bg-blue-600 hover:bg-blue-700 text-white"
+              className="h-9 rounded-full px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
             >
               {exportingFormat === "pdf" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <FileText className="mr-2 size-4" />}
               Export PDF
@@ -301,7 +301,7 @@ export default function TpoReportsPage() {
               variant="outline"
               onClick={() => void handleExport("docx")}
               disabled={Boolean(exportingFormat)}
-              className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50"
+              className="h-9 rounded-full px-4 border-border text-foreground hover:bg-muted/50"
             >
               {exportingFormat === "docx" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <FileText className="mr-2 size-4" />}
               Export DOCX
@@ -310,7 +310,7 @@ export default function TpoReportsPage() {
               variant="outline"
               onClick={() => void handleExport("csv")}
               disabled={Boolean(exportingFormat)}
-              className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50"
+              className="h-9 rounded-full px-4 border-border text-foreground hover:bg-muted/50"
             >
               {exportingFormat === "csv" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Download className="mr-2 size-4" />}
               Export CSV
@@ -319,49 +319,49 @@ export default function TpoReportsPage() {
               variant="outline"
               onClick={() => void handleExport("xlsx")}
               disabled={Boolean(exportingFormat)}
-              className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50"
+              className="h-9 rounded-full px-4 border-border text-foreground hover:bg-muted/50"
             >
               {exportingFormat === "xlsx" ? <Loader2 className="mr-2 size-4 animate-spin" /> : <FileSpreadsheet className="mr-2 size-4" />}
               Export XLSX
             </Button>
-            <Badge variant="secondary" className="ml-auto">
+            <Badge variant="secondary" className="ml-auto bg-muted text-muted-foreground border border-border">
               {reportData ? `Generated for ${reportData.institute_name}` : "No report loaded"}
             </Badge>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/60 bg-white shadow-sm">
-          <div className="border-b border-slate-100 px-6 py-4">
-            <h2 className="text-base font-semibold text-slate-900">Placement Data Preview</h2>
+        <div className="rounded-3xl border border-border/80 bg-card shadow-sm overflow-hidden">
+          <div className="border-b border-border/60 px-6 py-4">
+            <h2 className="text-base font-semibold text-card-foreground">Placement Data Preview</h2>
           </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Roll No</TableHead>
-                  <TableHead>Branch</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Offer</TableHead>
-                  <TableHead>Pay</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                <TableRow className="border-b border-border/60 hover:bg-transparent">
+                  <TableHead className="text-muted-foreground">Name</TableHead>
+                  <TableHead className="text-muted-foreground">Roll No</TableHead>
+                  <TableHead className="text-muted-foreground">Branch</TableHead>
+                  <TableHead className="text-muted-foreground">Company</TableHead>
+                  <TableHead className="text-muted-foreground">Offer</TableHead>
+                  <TableHead className="text-muted-foreground">Pay</TableHead>
+                  <TableHead className="text-right text-muted-foreground">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {topPlacements.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-slate-500">
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                       {loading ? "Loading report data..." : "No placement rows available for selected filters."}
                     </TableCell>
                   </TableRow>
                 ) : (
                   topPlacements.map((row) => (
-                    <TableRow key={`${row.student_id}-${row.updated_at}`}>
-                      <TableCell>{row.name}</TableCell>
-                      <TableCell>{row.roll_no}</TableCell>
-                      <TableCell>{row.branch}</TableCell>
-                      <TableCell>{row.company_name}</TableCell>
-                      <TableCell className="capitalize">{row.offer_type}</TableCell>
+                    <TableRow key={`${row.student_id}-${row.updated_at}`} className="border-b border-border/40 hover:bg-muted/30">
+                      <TableCell className="font-medium text-foreground">{row.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{row.roll_no}</TableCell>
+                      <TableCell className="text-muted-foreground">{row.branch}</TableCell>
+                      <TableCell className="text-foreground">{row.company_name}</TableCell>
+                      <TableCell className="capitalize text-muted-foreground">{row.offer_type}</TableCell>
                       <TableCell>
                         <Input
                           type="number"
@@ -375,7 +375,7 @@ export default function TpoReportsPage() {
                             }))
                           }
                           placeholder="Enter pay"
-                          className="h-8 w-32 rounded-full bg-slate-50 border-transparent px-3 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                          className="h-8 w-32 rounded-full bg-muted/50 border-input px-3 text-sm font-medium text-foreground placeholder:text-muted-foreground"
                         />
                       </TableCell>
                       <TableCell className="text-right">
@@ -384,7 +384,7 @@ export default function TpoReportsPage() {
                           variant="outline"
                           onClick={() => void handleSavePay(row.student_id)}
                           disabled={Boolean(savingPayByStudent[row.student_id])}
-                          className="h-8 rounded-full px-3 border-slate-200 text-slate-700 hover:bg-slate-50"
+                          className="h-8 rounded-full px-3 border-border text-foreground hover:bg-muted/50"
                         >
                           {savingPayByStudent[row.student_id] ? <Loader2 className="size-4 animate-spin" /> : "Save"}
                         </Button>

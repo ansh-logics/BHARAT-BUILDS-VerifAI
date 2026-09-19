@@ -51,6 +51,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PaletteSwitcher } from "@/components/theme/palette-switcher";
 
 const BRANCHES: BranchOption[] = [
   "CSE",
@@ -271,8 +272,8 @@ export default function DashboardPage() {
 
   const currentResumeFileName = formData.resumeFile?.name || existingResumeFileName;
   const currentMarksheetFileName = formData.marksheetFile?.name || existingMarksheetFileName;
-  const surfaceCardClass = "rounded-3xl border border-slate-200/60 bg-white shadow-sm";
-  const inputClass = "h-11 rounded-xl border-slate-200 bg-white";
+  const surfaceCardClass = "rounded-3xl border border-border/80 bg-card text-card-foreground shadow-xs";
+  const inputClass = "h-11 rounded-xl border-input bg-background text-foreground";
 
   const setField = <K extends keyof FormDataState>(
     key: K,
@@ -571,25 +572,28 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8f9fa] px-4 py-10 md:px-6">
+    <main className="min-h-screen bg-background text-foreground transition-colors px-4 py-10 md:px-6">
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <header className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Student Workspace</p>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-900">VerifAI Dashboard</h1>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-mono">Student Workspace</p>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">VerifAI Dashboard</h1>
             </div>
-            <Link
-              href="/profile"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
-              )}
-            >
-              View profile
-            </Link>
+            <div className="flex items-center gap-3">
+              <PaletteSwitcher />
+              <Link
+                href="/profile"
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "rounded-full border-border/80 bg-card hover:bg-muted font-medium text-xs sm:text-sm",
+                )}
+              >
+                View profile
+              </Link>
+            </div>
           </div>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             Analyze your profile, review details, and save your student profile.
           </p>
         </header>
@@ -603,24 +607,24 @@ export default function DashboardPage() {
         ) : null}
 
         <Card className={surfaceCardClass}>
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="flex items-center gap-2 text-base text-slate-900">
-              <FileText className="h-4 w-4 text-blue-600" />
+          <CardHeader className="pb-3 border-b border-border/60">
+            <CardTitle className="flex items-center gap-2 text-base text-card-foreground">
+              <FileText className="h-4 w-4 text-primary" />
               File Uploads
             </CardTitle>
-            <CardDescription className="text-slate-500">
+            <CardDescription className="text-muted-foreground">
               Keep documents updated so analysis stays accurate.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="rounded-2xl border border-border/80 bg-muted/40 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-slate-900">Resume (PDF/DOCX)</p>
+                  <p className="text-sm font-semibold text-card-foreground">Resume (PDF/DOCX)</p>
                   {currentResumeFileName ? (
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 px-2 py-1 rounded-md ring-1 ring-green-100">Uploaded</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/20">Uploaded</span>
                   ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Missing</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-1 rounded-md border border-border">Missing</span>
                   )}
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-2">
@@ -632,20 +636,20 @@ export default function DashboardPage() {
                       href={analysisResult?.resume_url || profileSnapshot?.resume_url || "#"}
                       target="_blank"
                       rel="noreferrer"
-                      className="shrink-0 text-xs font-semibold text-blue-600 hover:text-blue-800 underline"
+                      className="shrink-0 text-xs font-semibold text-primary hover:underline"
                     >
                       View Resume
                     </a>
                   ) : null}
                 </div>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="rounded-2xl border border-border/80 bg-muted/40 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-slate-900">Marksheet (PDF)</p>
+                  <p className="text-sm font-semibold text-card-foreground">Marksheet (PDF)</p>
                   {currentMarksheetFileName ? (
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 px-2 py-1 rounded-md ring-1 ring-green-100">Uploaded</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/20">Uploaded</span>
                   ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Missing</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-1 rounded-md border border-border">Missing</span>
                   )}
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-2">
@@ -657,7 +661,7 @@ export default function DashboardPage() {
                       href={analysisResult?.marksheet_url || profileSnapshot?.marksheet_url || "#"}
                       target="_blank"
                       rel="noreferrer"
-                      className="shrink-0 text-xs font-semibold text-blue-600 hover:text-blue-800 underline"
+                      className="shrink-0 text-xs font-semibold text-primary hover:underline"
                     >
                       View Marksheet
                     </a>
@@ -665,19 +669,19 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            <Button type="button" onClick={openFileDialog} className="w-full bg-blue-600 text-white hover:bg-blue-700 md:w-auto">
+            <Button type="button" onClick={openFileDialog} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 md:w-auto font-medium">
               Update Files
             </Button>
           </CardContent>
         </Card>
 
         <Card className={surfaceCardClass}>
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="flex items-center gap-2 text-base text-slate-900">
-              <Code2 className="h-4 w-4 text-blue-600" />
+          <CardHeader className="pb-3 border-b border-border/60">
+            <CardTitle className="flex items-center gap-2 text-base text-card-foreground">
+              <Code2 className="h-4 w-4 text-primary" />
               Coding Profiles
             </CardTitle>
-            <CardDescription className="text-slate-500">
+            <CardDescription className="text-muted-foreground">
               Provide coding profile usernames for analysis.
             </CardDescription>
           </CardHeader>
@@ -704,12 +708,12 @@ export default function DashboardPage() {
         </Card>
 
         <Card className={surfaceCardClass}>
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="flex items-center gap-2 text-base text-slate-900">
-              <UserRound className="h-4 w-4 text-blue-600" />
+          <CardHeader className="pb-3 border-b border-border/60">
+            <CardTitle className="flex items-center gap-2 text-base text-card-foreground">
+              <UserRound className="h-4 w-4 text-primary" />
               Basic Information
             </CardTitle>
-            <CardDescription className="text-slate-500">
+            <CardDescription className="text-muted-foreground">
               Auto-filled after analysis and editable before saving.
             </CardDescription>
           </CardHeader>
@@ -764,12 +768,12 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-2 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
+        <div className="space-y-2 rounded-2xl border border-border/80 bg-card text-card-foreground p-4 shadow-xs">
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={handleAnalyze}
               disabled={analyzing || saving}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
             >
               {analyzing ? (
                 <>
@@ -787,7 +791,7 @@ export default function DashboardPage() {
               variant="secondary"
               onClick={handleSave}
               disabled={saving || analyzing}
-              className="bg-slate-100 text-slate-800 hover:bg-slate-200"
+              className="border border-border/80 bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium"
             >
               {saving ? (
                 <>
@@ -800,11 +804,11 @@ export default function DashboardPage() {
             </Button>
           </div>
           {hasPendingReanalysis ? (
-            <p className="text-sm text-slate-600">
+            <p className="text-xs text-muted-foreground">
               Save will run analysis for changed inputs before storing your profile.
             </p>
           ) : (
-            <p className="text-sm text-slate-600">
+            <p className="text-xs text-muted-foreground">
               No analysis changes pending. Save will store profile details directly.
             </p>
           )}
@@ -866,37 +870,37 @@ export default function DashboardPage() {
             <h2 className="text-xl font-semibold tracking-tight">Analysis Result</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <Card className={surfaceCardClass}>
-                <CardHeader className="pb-3 border-b border-slate-100">
-                  <CardTitle className="text-base text-slate-900">Skills</CardTitle>
+                <CardHeader className="pb-3 border-b border-border/60">
+                  <CardTitle className="text-base text-card-foreground">Skills</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2 pt-4">
                   {analysisResult.skills.length > 0 ? (
                     analysisResult.skills.map((skill) => (
-                      <span key={skill} className="bg-slate-100 text-slate-700 text-xs px-3 py-1.5 rounded-md font-medium">
+                      <span key={skill} className="bg-muted text-foreground text-xs px-3 py-1.5 rounded-md font-medium border border-border/60">
                         {skill}
                       </span>
                     ))
                   ) : (
-                    <p className="text-sm text-slate-500">No skills extracted.</p>
+                    <p className="text-sm text-muted-foreground">No skills extracted.</p>
                   )}
                 </CardContent>
               </Card>
 
               <Card className={surfaceCardClass}>
-                <CardHeader className="pb-3 border-b border-slate-100">
-                  <CardTitle className="text-base text-slate-900">Coding</CardTitle>
+                <CardHeader className="pb-3 border-b border-border/60">
+                  <CardTitle className="text-base text-card-foreground">Coding</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm pt-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500">Persona</span>
-                    <span className="font-medium text-slate-900">{analysisResult.coding.persona || "N/A"}</span>
+                    <span className="text-muted-foreground">Persona</span>
+                    <span className="font-medium text-foreground">{analysisResult.coding.persona || "N/A"}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-slate-700">
-                    <div>GitHub Repos: <span className="font-medium text-slate-900">{githubStats.repos}</span></div>
-                    <div>Commits (30d): <span className="font-medium text-slate-900">{githubStats.commits}</span></div>
-                    <div>Solved: <span className="font-medium text-slate-900">{leetcodeStats.totalSolved}</span></div>
+                  <div className="grid grid-cols-2 gap-2 text-muted-foreground">
+                    <div>GitHub Repos: <span className="font-medium text-foreground">{githubStats.repos}</span></div>
+                    <div>Commits (30d): <span className="font-medium text-foreground">{githubStats.commits}</span></div>
+                    <div>Solved: <span className="font-medium text-foreground">{leetcodeStats.totalSolved}</span></div>
                     <div>
-                      E/M/H: <span className="font-medium text-slate-900">{leetcodeStats.easy}/{leetcodeStats.medium}/
+                      E/M/H: <span className="font-medium text-foreground">{leetcodeStats.easy}/{leetcodeStats.medium}/
                       {leetcodeStats.hard}</span>
                     </div>
                   </div>
@@ -904,30 +908,30 @@ export default function DashboardPage() {
               </Card>
 
               <Card className={surfaceCardClass}>
-                <CardHeader className="pb-3 border-b border-slate-100">
-                  <CardTitle className="text-base text-slate-900">Academics</CardTitle>
+                <CardHeader className="pb-3 border-b border-border/60">
+                  <CardTitle className="text-base text-card-foreground">Academics</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm pt-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500">CGPA</span>
-                    <span className="font-medium text-slate-900">{analysisResult.academics.cgpa ?? "N/A"}</span>
+                    <span className="text-muted-foreground">CGPA</span>
+                    <span className="font-medium text-foreground">{analysisResult.academics.cgpa ?? "N/A"}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-500">Status</span>
+                    <span className="text-muted-foreground">Status</span>
                     {analysisResult.academics.verified ? (
-                      <span className="text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 px-2 py-1 rounded-md ring-1 ring-green-100">Verified</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/20">Verified</span>
                     ) : (
-                      <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Unverified</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-1 rounded-md border border-border">Unverified</span>
                     )}
                   </div>
                   {(analysisResult?.marksheet_url || profileSnapshot?.marksheet_url) ? (
                     <div className="flex items-center justify-between pt-1">
-                      <span className="text-slate-500">Document</span>
+                      <span className="text-muted-foreground">Document</span>
                       <a
                         href={analysisResult?.marksheet_url || profileSnapshot?.marksheet_url || "#"}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                        className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
                       >
                         View Marksheet
                       </a>
@@ -937,12 +941,12 @@ export default function DashboardPage() {
               </Card>
 
               <Card className={surfaceCardClass}>
-                <CardHeader className="pb-3 border-b border-slate-100">
-                  <CardTitle className="text-base text-slate-900">Overall Score</CardTitle>
+                <CardHeader className="pb-3 border-b border-border/60">
+                  <CardTitle className="text-base text-card-foreground">Overall Score</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 pt-4">
-                  <div className="text-4xl font-semibold tracking-tight text-slate-900">
-                    {analysisResult.overall_score.toFixed(1)} <span className="text-xl text-slate-400 font-medium">/ 100</span>
+                  <div className="text-4xl font-semibold tracking-tight text-foreground">
+                    {analysisResult.overall_score.toFixed(1)} <span className="text-xl text-muted-foreground font-medium">/ 100</span>
                   </div>
                   <Progress value={analysisResult.overall_score} className="h-2" />
                 </CardContent>
@@ -953,27 +957,28 @@ export default function DashboardPage() {
       </div>
 
       {isFileDialogOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-xl rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xl">
-            <h2 className="text-lg font-semibold">Update files</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs px-4">
+          <div className="w-full max-w-xl rounded-3xl border border-border/80 bg-card text-card-foreground p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-foreground">Update files</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Replace resume or marksheet. You can update one or both.
             </p>
 
             <div className="mt-5 space-y-4">
-              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="space-y-3 rounded-2xl border border-border/80 bg-muted/40 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <label className="text-sm font-semibold text-slate-900">Resume (PDF/DOCX)</label>
+                  <label className="text-sm font-semibold text-foreground">Resume (PDF/DOCX)</label>
                   {pendingResumeFile?.name || currentResumeFileName ? (
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 px-2 py-1 rounded-md ring-1 ring-green-100">Ready</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/20">Ready</span>
                   ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Missing</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-1 rounded-md border border-border">Missing</span>
                   )}
                 </div>
                 <Input
                   type="file"
                   accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   onChange={(e) => setPendingResumeFile(e.target.files?.[0] ?? null)}
+                  className="border-input bg-background"
                 />
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">
@@ -984,7 +989,7 @@ export default function DashboardPage() {
                       href={profileSnapshot?.resume_url || analysisResult?.resume_url || "#"}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs font-semibold text-blue-600 hover:underline"
+                      className="text-xs font-semibold text-primary hover:underline"
                     >
                       View document
                     </a>
@@ -992,19 +997,20 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="space-y-3 rounded-2xl border border-border/80 bg-muted/40 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <label className="text-sm font-semibold text-slate-900">Marksheet (PDF)</label>
+                  <label className="text-sm font-semibold text-foreground">Marksheet (PDF)</label>
                   {pendingMarksheetFile?.name || currentMarksheetFileName ? (
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 px-2 py-1 rounded-md ring-1 ring-green-100">Ready</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/20">Ready</span>
                   ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded-md ring-1 ring-slate-200">Missing</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-muted text-muted-foreground px-2 py-1 rounded-md border border-border">Missing</span>
                   )}
                 </div>
                 <Input
                   type="file"
                   accept=".pdf,application/pdf"
                   onChange={(e) => setPendingMarksheetFile(e.target.files?.[0] ?? null)}
+                  className="border-input bg-background"
                 />
                 <div className="flex items-center justify-between">
                   <p className="text-xs text-muted-foreground">
@@ -1015,7 +1021,7 @@ export default function DashboardPage() {
                       href={profileSnapshot?.marksheet_url || analysisResult?.marksheet_url || "#"}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-xs font-semibold text-blue-600 hover:underline"
+                      className="text-xs font-semibold text-primary hover:underline"
                     >
                       View document
                     </a>
@@ -1025,10 +1031,10 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-6 flex justify-end gap-2">
-              <Button variant="outline" onClick={closeFileDialog}>
+              <Button variant="outline" onClick={closeFileDialog} className="rounded-xl border-border/80 font-medium">
                 Cancel
               </Button>
-              <Button onClick={saveFileDialogChanges} className="bg-blue-600 text-white hover:bg-blue-700">
+              <Button onClick={saveFileDialogChanges} className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-medium">
                 Save file changes
               </Button>
             </div>

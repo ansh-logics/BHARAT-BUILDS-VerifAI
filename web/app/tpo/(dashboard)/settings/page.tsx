@@ -133,65 +133,65 @@ export default function TpoSettingsPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 rounded-[2rem] w-full h-full pb-10">
+    <div className="flex-1 overflow-y-auto p-8 rounded-[2rem] w-full h-full pb-10 bg-background">
       <div className="mx-auto w-full max-w-7xl space-y-8">
         <section className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Settings</h1>
-          <p className="text-sm text-slate-600">Manage dashboard preferences, communication defaults, and access controls.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
+          <p className="text-sm text-muted-foreground">Manage dashboard preferences, communication defaults, and access controls.</p>
         </section>
 
         <section className="grid gap-4 md:grid-cols-4">
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm md:col-span-1">
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm md:col-span-1">
             <CardHeader className="pb-2 pt-5 px-5 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium text-slate-500">Profile</CardTitle>
-              <UserCog className="size-4 text-slate-400" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Profile</CardTitle>
+              <UserCog className="size-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="px-5 pb-5 text-sm text-slate-700">TPO account defaults</CardContent>
+            <CardContent className="px-5 pb-5 text-sm text-card-foreground">TPO account defaults</CardContent>
           </Card>
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm md:col-span-1">
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm md:col-span-1">
             <CardHeader className="pb-2 pt-5 px-5 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium text-slate-500">Mail</CardTitle>
-              <Mail className="size-4 text-slate-400" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Mail</CardTitle>
+              <Mail className="size-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="px-5 pb-5 text-sm text-slate-700">Email sender defaults</CardContent>
+            <CardContent className="px-5 pb-5 text-sm text-card-foreground">Email sender defaults</CardContent>
           </Card>
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm md:col-span-1">
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm md:col-span-1">
             <CardHeader className="pb-2 pt-5 px-5 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium text-slate-500">Notifications</CardTitle>
-              <Bell className="size-4 text-slate-400" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Notifications</CardTitle>
+              <Bell className="size-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="px-5 pb-5 text-sm text-slate-700">Alerts and reminders</CardContent>
+            <CardContent className="px-5 pb-5 text-sm text-card-foreground">Alerts and reminders</CardContent>
           </Card>
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm md:col-span-1">
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm md:col-span-1">
             <CardHeader className="pb-2 pt-5 px-5 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium text-slate-500">Access</CardTitle>
-              <ShieldCheck className="size-4 text-slate-400" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Access</CardTitle>
+              <ShieldCheck className="size-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="px-5 pb-5 text-sm text-slate-700">Security and permissions</CardContent>
+            <CardContent className="px-5 pb-5 text-sm text-card-foreground">Security and permissions</CardContent>
           </Card>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-2">
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">TPO Profile Defaults</CardTitle>
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">TPO Profile Defaults</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
-              <Input placeholder="Display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="h-10 rounded-xl border-slate-200" disabled={loading || saving} />
-              <Input placeholder="Contact number" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="h-10 rounded-xl border-slate-200" disabled={loading || saving} />
-              <Input placeholder="Institute name" value={instituteName} onChange={(e) => setInstituteName(e.target.value)} className="h-10 rounded-xl border-slate-200" disabled={loading || saving} />
+              <Input placeholder="Display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="h-10 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground" disabled={loading || saving} />
+              <Input placeholder="Contact number" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="h-10 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground" disabled={loading || saving} />
+              <Input placeholder="Institute name" value={instituteName} onChange={(e) => setInstituteName(e.target.value)} className="h-10 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground" disabled={loading || saving} />
             </CardContent>
           </Card>
 
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Mail Configuration</CardTitle>
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Mail Configuration</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
-              <Input placeholder="Sender name (e.g., TPO Cell)" value={senderName} onChange={(e) => setSenderName(e.target.value)} className="h-10 rounded-xl border-slate-200" disabled={loading || saving} />
-              <Input placeholder="Reply-to email" value={replyToEmail} onChange={(e) => setReplyToEmail(e.target.value)} className="h-10 rounded-xl border-slate-200" disabled={loading || saving} />
-              <Input placeholder="Default interview timezone (e.g., Asia/Kolkata)" value={defaultTimezone} onChange={(e) => setDefaultTimezone(e.target.value)} className="h-10 rounded-xl border-slate-200" disabled={loading || saving} />
-              <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 px-4 py-3 text-xs text-slate-600">
+              <Input placeholder="Sender name (e.g., TPO Cell)" value={senderName} onChange={(e) => setSenderName(e.target.value)} className="h-10 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground" disabled={loading || saving} />
+              <Input placeholder="Reply-to email" value={replyToEmail} onChange={(e) => setReplyToEmail(e.target.value)} className="h-10 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground" disabled={loading || saving} />
+              <Input placeholder="Default interview timezone (e.g., Asia/Kolkata)" value={defaultTimezone} onChange={(e) => setDefaultTimezone(e.target.value)} className="h-10 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground" disabled={loading || saving} />
+              <div className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
                 Gmail SMTP/app-password and provider credentials are managed via backend environment configuration.
               </div>
             </CardContent>
@@ -199,38 +199,38 @@ export default function TpoSettingsPage() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-2">
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Notification Preferences</CardTitle>
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Notification Preferences</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-5">
-              <label className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/60 px-4 py-3 text-sm text-slate-700">
+              <label className="flex items-center justify-between rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground cursor-pointer">
                 Group stale reminder (7+ days)
-                <input type="checkbox" checked={staleGroupReminderEnabled} onChange={(e) => setStaleGroupReminderEnabled(e.target.checked)} className="size-4 accent-blue-600" disabled={loading || saving} />
+                <input type="checkbox" checked={staleGroupReminderEnabled} onChange={(e) => setStaleGroupReminderEnabled(e.target.checked)} className="size-4 accent-primary" disabled={loading || saving} />
               </label>
-              <label className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/60 px-4 py-3 text-sm text-slate-700">
+              <label className="flex items-center justify-between rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground cursor-pointer">
                 Daily queue summary
-                <input type="checkbox" checked={dailyQueueSummaryEnabled} onChange={(e) => setDailyQueueSummaryEnabled(e.target.checked)} className="size-4 accent-blue-600" disabled={loading || saving} />
+                <input type="checkbox" checked={dailyQueueSummaryEnabled} onChange={(e) => setDailyQueueSummaryEnabled(e.target.checked)} className="size-4 accent-primary" disabled={loading || saving} />
               </label>
-              <label className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-slate-50/60 px-4 py-3 text-sm text-slate-700">
+              <label className="flex items-center justify-between rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground cursor-pointer">
                 Placement update confirmations
-                <input type="checkbox" checked={placementUpdateConfirmationEnabled} onChange={(e) => setPlacementUpdateConfirmationEnabled(e.target.checked)} className="size-4 accent-blue-600" disabled={loading || saving} />
+                <input type="checkbox" checked={placementUpdateConfirmationEnabled} onChange={(e) => setPlacementUpdateConfirmationEnabled(e.target.checked)} className="size-4 accent-primary" disabled={loading || saving} />
               </label>
             </CardContent>
           </Card>
 
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Access & Security</CardTitle>
+          <Card className="bg-card rounded-3xl border border-border/80 shadow-sm">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Access & Security</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-5">
-              <Input placeholder="Current password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="h-10 rounded-xl border-slate-200" disabled={loading || changingPassword} />
-              <Input placeholder="New password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="h-10 rounded-xl border-slate-200" disabled={loading || changingPassword} />
-              <Input placeholder="Confirm new password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="h-10 rounded-xl border-slate-200" disabled={loading || changingPassword} />
-              <Button className="h-9 rounded-full px-5 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => void handleChangePassword()} disabled={loading || changingPassword}>
+              <Input placeholder="Current password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="h-10 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground" disabled={loading || changingPassword} />
+              <Input placeholder="New password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="h-10 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground" disabled={loading || changingPassword} />
+              <Input placeholder="Confirm new password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="h-10 rounded-xl border-input bg-background text-foreground placeholder:text-muted-foreground" disabled={loading || changingPassword} />
+              <Button className="h-9 rounded-full px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-medium" onClick={() => void handleChangePassword()} disabled={loading || changingPassword}>
                 {changingPassword ? "Updating..." : "Update Password"}
               </Button>
-              <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 px-4 py-3 text-xs text-slate-600">
+              <div className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
                 API key fallback and token policy are enforced server-side for TPO endpoints.
               </div>
             </CardContent>
@@ -238,10 +238,10 @@ export default function TpoSettingsPage() {
         </section>
 
         <section className="flex items-center justify-end gap-2">
-          <Button variant="outline" className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50" onClick={handleReset} disabled={loading || saving}>
+          <Button variant="outline" className="h-9 rounded-full px-4 border-border text-foreground hover:bg-muted/50" onClick={handleReset} disabled={loading || saving}>
             Reset
           </Button>
-          <Button className="h-9 rounded-full px-5 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => void handleSaveSettings()} disabled={loading || saving}>
+          <Button className="h-9 rounded-full px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-medium" onClick={() => void handleSaveSettings()} disabled={loading || saving}>
             {saving ? "Saving..." : "Save Settings"}
           </Button>
         </section>

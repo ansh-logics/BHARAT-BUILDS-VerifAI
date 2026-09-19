@@ -28,7 +28,7 @@ export function Hero() {
       {/* Background Ambient Glow */}
       <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 -z-10 h-[600px] w-full max-w-7xl">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[500px] rounded-full bg-primary/10 blur-[120px]" />
-        <div className="absolute top-1/3 left-1/3 size-[300px] rounded-full bg-indigo-500/10 blur-[100px]" />
+        <div className="absolute top-1/3 left-1/3 size-[300px] rounded-full bg-primary/5 blur-[100px]" />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
@@ -55,7 +55,7 @@ export function Hero() {
           className="max-w-4xl text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance"
         >
           Turn student evidence into{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-indigo-600 to-blue-500">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--hero-gradient-from)] via-[var(--hero-gradient-via)] to-[var(--hero-gradient-to)]">
             explainable placement decisions.
           </span>
         </motion.h1>
@@ -170,13 +170,13 @@ export function Hero() {
               </div>
 
               {/* Clarification Capsule Interactive Pill */}
-              <div className="rounded-xl border border-indigo-200/80 bg-gradient-to-r from-indigo-50/80 via-sky-50/40 to-background p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="rounded-xl border border-border/80 bg-muted/40 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
                 <div className="flex items-center gap-2">
-                  <div className="size-6 rounded-md bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                  <div className="size-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center shrink-0">
                     <Sparkles className="size-3.5" />
                   </div>
                   <span className="text-xs font-medium text-foreground">
-                    <strong className="text-indigo-950 font-semibold">TPO Criteria:</strong> Are you filtering for unplaced students only or all eligible candidates?
+                    <strong className="text-foreground font-semibold">TPO Criteria:</strong> Are you filtering for unplaced students only or all eligible candidates?
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 self-end sm:self-auto">
@@ -184,9 +184,9 @@ export function Hero() {
                     type="button"
                     onClick={() => setSelectedClarification("unplaced")}
                     className={cn(
-                      "px-3 py-1 rounded-lg text-xs font-medium transition-all",
+                      "px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
                       selectedClarification === "unplaced"
-                        ? "bg-indigo-600 text-white shadow-2xs"
+                        ? "bg-primary text-primary-foreground shadow-2xs font-semibold"
                         : "bg-background/80 text-muted-foreground hover:text-foreground border border-border/60"
                     )}
                   >
@@ -197,9 +197,9 @@ export function Hero() {
                     type="button"
                     onClick={() => setSelectedClarification("all")}
                     className={cn(
-                      "px-3 py-1 rounded-lg text-xs font-medium transition-all",
+                      "px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
                       selectedClarification === "all"
-                        ? "bg-indigo-600 text-white shadow-2xs"
+                        ? "bg-primary text-primary-foreground shadow-2xs font-semibold"
                         : "bg-background/80 text-muted-foreground hover:text-foreground border border-border/60"
                     )}
                   >
@@ -250,7 +250,7 @@ export function Hero() {
                 <div className="p-4 rounded-xl border border-border/80 bg-card hover:border-primary/40 hover:shadow-sm transition-all space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="size-9 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center text-xs">
+                      <div className="size-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
                         PP
                       </div>
                       <div>
@@ -286,7 +286,7 @@ export function Hero() {
                 <div className="p-4 rounded-xl border border-border/80 bg-card hover:border-primary/40 hover:shadow-sm transition-all space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="size-9 rounded-full bg-sky-50 text-sky-700 font-bold flex items-center justify-center text-xs">
+                      <div className="size-9 rounded-full bg-muted text-foreground font-bold flex items-center justify-center text-xs">
                         RV
                       </div>
                       <div>
@@ -295,7 +295,7 @@ export function Hero() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-base font-extrabold text-indigo-600">89%</div>
+                      <div className="text-base font-extrabold text-primary">89%</div>
                       <div className="text-[10px] text-muted-foreground uppercase font-medium">Match</div>
                     </div>
                   </div>

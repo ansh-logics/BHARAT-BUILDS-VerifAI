@@ -389,35 +389,35 @@ export default function PlacementGroupDetailPage() {
   return (
     <div className="flex-1 overflow-y-auto p-8 rounded-[2rem] w-full h-full pb-10">
       <div className="mx-auto w-full max-w-7xl space-y-8">
-        <div className="rounded-3xl border border-slate-200/60 bg-white p-6 shadow-sm">
+        <div className="rounded-3xl border border-border/80 bg-card text-card-foreground p-6 shadow-xs">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900">{group.title}</h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <h1 className="text-3xl font-bold tracking-tight text-card-foreground">{group.title}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
                 Created by {group.created_by} on {new Date(group.created_at).toLocaleString()}
               </p>
-              <p className="text-sm text-slate-600">
-                Company: <span className="font-medium">{group.company_name || "Not captured"}</span> · Role type:{" "}
-                <span className="font-medium">{group.role_type || "Not captured"}</span>
+              <p className="text-sm text-muted-foreground">
+                Company: <span className="font-medium text-foreground">{group.company_name || "Not captured"}</span> · Role type:{" "}
+                <span className="font-medium text-foreground">{group.role_type || "Not captured"}</span>
               </p>
-              <p className="text-sm text-slate-600">
-                Pay/Stipend: <span className="font-medium">{group.pay_or_stipend || "Not captured"}</span> · Duration:{" "}
-                <span className="font-medium">{group.duration || "Not captured"}</span>
+              <p className="text-sm text-muted-foreground">
+                Pay/Stipend: <span className="font-medium text-foreground">{group.pay_or_stipend || "Not captured"}</span> · Duration:{" "}
+                <span className="font-medium text-foreground">{group.duration || "Not captured"}</span>
               </p>
-              <p className="text-sm text-slate-600">
-                Bond: <span className="font-medium">{group.bond_details || "Not captured"}</span>
+              <p className="text-sm text-muted-foreground">
+                Bond: <span className="font-medium text-foreground">{group.bond_details || "Not captured"}</span>
               </p>
             </div>
             <div className="flex gap-2 self-start">
               <Link href="/tpo/placement-groups">
-                <Button variant="outline" className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50">
+                <Button variant="outline" className="h-9 rounded-full px-4 border-border/80 font-medium">
                   Back to groups
                 </Button>
               </Link>
               <Button
                 onClick={() => void sendBulkMail()}
                 disabled={mailing || bulkPolling}
-                className="h-9 rounded-full px-5 bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                className="h-9 rounded-full px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-medium gap-2"
               >
                 Bulk mail
               </Button>
@@ -426,49 +426,49 @@ export default function PlacementGroupDetailPage() {
         </div>
 
         {bulkMailJob ? (
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">Bulk Mail Progress</CardTitle>
+          <Card className="bg-card text-card-foreground rounded-3xl border border-border/80 shadow-xs">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">Bulk Mail Progress</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-sm text-slate-600">
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>Status: {bulkStatusLabel}</span>
                 <span>
                   {bulkMailJob.processed_count}/{bulkMailJob.total_recipients} processed
                 </span>
               </div>
-              <Progress value={bulkMailJob.progress_percent} className="h-2 bg-slate-200" />
-              <div className="grid grid-cols-3 gap-2 text-sm">
+              <Progress value={bulkMailJob.progress_percent} className="h-2 bg-muted" />
+              <div className="grid grid-cols-3 gap-2 text-sm text-muted-foreground">
                 <p>Success: {bulkMailJob.success_count}</p>
                 <p>Failed: {bulkMailJob.failure_count}</p>
                 <p>Progress: {Math.round(bulkMailJob.progress_percent)}%</p>
               </div>
               {bulkMailJob.last_error ? (
-                <p className="text-xs text-red-600">Last error: {bulkMailJob.last_error}</p>
+                <p className="text-xs text-destructive">Last error: {bulkMailJob.last_error}</p>
               ) : null}
             </CardContent>
           </Card>
         ) : null}
 
-        <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="text-base text-slate-900">JD Summary</CardTitle>
+        <Card className="bg-card text-card-foreground rounded-3xl border border-border/80 shadow-xs">
+          <CardHeader className="pb-3 border-b border-border/60">
+            <CardTitle className="text-base text-card-foreground">JD Summary</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-slate-700 whitespace-pre-wrap">
+          <CardContent className="text-sm text-muted-foreground whitespace-pre-wrap">
             {group.jd_summary?.trim() || "No JD summary provided."}
           </CardContent>
         </Card>
 
-        <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="text-base text-slate-900">Mail Composer</CardTitle>
+        <Card className="bg-card text-card-foreground rounded-3xl border border-border/80 shadow-xs">
+          <CardHeader className="pb-3 border-b border-border/60">
+            <CardTitle className="text-base text-card-foreground">Mail Composer</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid gap-3 md:grid-cols-2">
               <select
                 value={mailType}
                 onChange={(e) => setMailType(e.target.value as TpoMailType)}
-                className="h-9 w-full rounded-full bg-slate-50 border border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                className="h-9 w-full rounded-full bg-muted border border-border px-4 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="shortlist_notice">Shortlist notice</option>
                 <option value="prep_topics">Preparation topics</option>
@@ -481,7 +481,7 @@ export default function PlacementGroupDetailPage() {
                 placeholder="Additional note (optional)"
                 value={additionalNote}
                 onChange={(e) => setAdditionalNote(e.target.value)}
-                className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground"
               />
             </div>
             {mailType === "prep_topics" ? (
@@ -489,7 +489,7 @@ export default function PlacementGroupDetailPage() {
                 placeholder="Prep topics (comma separated)"
                 value={prepTopicsText}
                 onChange={(e) => setPrepTopicsText(e.target.value)}
-                className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground"
               />
             ) : null}
             {mailType === "interview_schedule" ? (
@@ -498,19 +498,19 @@ export default function PlacementGroupDetailPage() {
                   type="date"
                   value={interviewDate}
                   onChange={(e) => setInterviewDate(e.target.value)}
-                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                  className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground"
                 />
                 <Input
                   type="time"
                   value={interviewStart}
                   onChange={(e) => setInterviewStart(e.target.value)}
-                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                  className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground"
                 />
                 <Input
                   type="time"
                   value={interviewEnd}
                   onChange={(e) => setInterviewEnd(e.target.value)}
-                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                  className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground"
                 />
               </div>
             ) : null}
@@ -520,13 +520,13 @@ export default function PlacementGroupDetailPage() {
                   placeholder="Custom subject"
                   value={customSubject}
                   onChange={(e) => setCustomSubject(e.target.value)}
-                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                  className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground"
                 />
                 <Textarea
                   value={customBody}
                   onChange={(e) => setCustomBody(e.target.value)}
                   placeholder="Custom body (supports {student_name}, {company_name})"
-                  className="min-h-[100px] w-full rounded-2xl bg-slate-50 border-transparent hover:bg-slate-100 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400"
+                  className="min-h-[100px] w-full rounded-2xl bg-background border-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground"
                 />
               </div>
             ) : null}
@@ -534,27 +534,27 @@ export default function PlacementGroupDetailPage() {
         </Card>
 
         {roundState ? (
-          <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100">
-              <CardTitle className="text-base text-slate-900">
+          <Card className="bg-card text-card-foreground rounded-3xl border border-border/80 shadow-xs">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <CardTitle className="text-base text-card-foreground">
                 Round {roundState.round_no} of {roundState.total_rounds}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-slate-700">
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>
-                Status: <span className="font-medium">{roundState.status}</span>
+                Status: <span className="font-semibold text-foreground">{roundState.status}</span>
               </p>
               {roundPreview ? (
                 <p>
-                  Qualified: <span className="font-medium">{roundPreview.qualified_count}</span> · Rejected:{" "}
-                  <span className="font-medium">{roundPreview.rejected_count}</span>
+                  Qualified: <span className="font-semibold text-foreground">{roundPreview.qualified_count}</span> · Rejected:{" "}
+                  <span className="font-semibold text-foreground">{roundPreview.rejected_count}</span>
                 </p>
               ) : null}
               <div className="flex gap-2">
                 <Button
                   onClick={() => void finalizeCurrentRound()}
                   disabled={finalizingRound || roundState.status === "finalized"}
-                  className="h-9 rounded-full px-4 bg-blue-600 hover:bg-blue-700 text-white"
+                  className="h-9 rounded-full px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
                 >
                   {finalizingRound ? "Finalizing..." : "Finalize round"}
                 </Button>
@@ -564,7 +564,7 @@ export default function PlacementGroupDetailPage() {
                     void sendBulkMail()
                   }
                   disabled={mailing || bulkPolling}
-                  className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50"
+                  className="h-9 rounded-full px-4 border-border/80 font-medium"
                 >
                   Send selected mail
                 </Button>
@@ -573,14 +573,14 @@ export default function PlacementGroupDetailPage() {
           </Card>
         ) : null}
 
-        <Card className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
-          <CardHeader className="pb-3 border-b border-slate-100">
-            <CardTitle className="text-base text-slate-900">Group Members ({visibleMembers.length})</CardTitle>
+        <Card className="bg-card text-card-foreground rounded-3xl border border-border/80 shadow-xs">
+          <CardHeader className="pb-3 border-b border-border/60">
+            <CardTitle className="text-base text-card-foreground">Group Members ({visibleMembers.length})</CardTitle>
           </CardHeader>
           <CardContent className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="border-border/60">
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Roll</TableHead>
@@ -592,13 +592,13 @@ export default function PlacementGroupDetailPage() {
               </TableHeader>
               <TableBody>
                 {visibleMembers.map((member) => (
-                  <TableRow key={member.student_id}>
-                    <TableCell className="font-medium">{member.name}</TableCell>
-                    <TableCell>{member.email}</TableCell>
-                    <TableCell>{member.roll_no || "—"}</TableCell>
-                    <TableCell>{member.branch}</TableCell>
-                    <TableCell>{roundStatusMap.get(member.student_id) || "—"}</TableCell>
-                    <TableCell>
+                  <TableRow key={member.student_id} className="border-border/60">
+                    <TableCell className="font-medium text-foreground">{member.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{member.email}</TableCell>
+                    <TableCell className="text-muted-foreground">{member.roll_no || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{member.branch}</TableCell>
+                    <TableCell className="text-muted-foreground">{roundStatusMap.get(member.student_id) || "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">
                       {member.placement?.is_active
                         ? `${member.placement.offer_type} @ ${member.placement.company_name}`
                         : "Not placed"}
@@ -610,7 +610,7 @@ export default function PlacementGroupDetailPage() {
                           variant="outline"
                           onClick={() => openIndividualMailComposer(member)}
                           disabled={mailing || bulkPolling || individualMailing}
-                          className="h-8 rounded-full px-3 border-slate-200 text-slate-700 hover:bg-slate-50"
+                          className="h-8 rounded-full px-3 border-border/80 font-medium"
                         >
                           Mail
                         </Button>
@@ -621,7 +621,7 @@ export default function PlacementGroupDetailPage() {
                               variant="outline"
                               onClick={() => void updateRoundStatus(member.student_id, "qualified")}
                               disabled={updatingRoundStudentId === member.student_id}
-                              className="h-8 rounded-full px-3 border-slate-200 text-slate-700 hover:bg-slate-50"
+                              className="h-8 rounded-full px-3 border-border/80 font-medium"
                             >
                               Qualify
                             </Button>
@@ -630,7 +630,7 @@ export default function PlacementGroupDetailPage() {
                               variant="outline"
                               onClick={() => void updateRoundStatus(member.student_id, "rejected")}
                               disabled={updatingRoundStudentId === member.student_id}
-                              className="h-8 rounded-full px-3 border-slate-200 text-slate-700 hover:bg-slate-50"
+                              className="h-8 rounded-full px-3 border-border/80 font-medium"
                             >
                               Reject
                             </Button>
@@ -641,7 +641,7 @@ export default function PlacementGroupDetailPage() {
                             size="sm"
                             onClick={() => void markPlaced(member.student_id)}
                             disabled={placingStudentId === member.student_id}
-                            className="h-8 rounded-full px-3 bg-blue-600 hover:bg-blue-700 text-white"
+                            className="h-8 rounded-full px-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
                           >
                             Mark placed
                           </Button>
@@ -656,12 +656,12 @@ export default function PlacementGroupDetailPage() {
         </Card>
       </div>
       {individualMailOpen && individualMailStudent ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="w-full max-w-2xl rounded-3xl border border-border bg-card text-card-foreground p-6 shadow-xl">
             <div className="mb-4">
-              <h2 className="text-xl font-semibold text-slate-900">Send individual mail</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                To <span className="font-medium">{individualMailStudent.name}</span> ({individualMailStudent.email})
+              <h2 className="text-xl font-semibold text-card-foreground">Send individual mail</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                To <span className="font-medium text-foreground">{individualMailStudent.name}</span> ({individualMailStudent.email})
               </p>
             </div>
             <div className="space-y-3">
@@ -669,7 +669,7 @@ export default function PlacementGroupDetailPage() {
                 <select
                   value={individualMailType}
                   onChange={(e) => setIndividualMailType(e.target.value as TpoMailType)}
-                  className="h-9 w-full rounded-full bg-slate-50 border border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                  className="h-9 w-full rounded-full bg-muted border border-border px-4 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="shortlist_notice">Shortlist notice</option>
                   <option value="prep_topics">Preparation topics</option>
@@ -682,7 +682,7 @@ export default function PlacementGroupDetailPage() {
                   placeholder="Additional note (optional)"
                   value={individualAdditionalNote}
                   onChange={(e) => setIndividualAdditionalNote(e.target.value)}
-                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                  className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground"
                 />
               </div>
               {individualMailType === "prep_topics" ? (
@@ -690,7 +690,7 @@ export default function PlacementGroupDetailPage() {
                   placeholder="Prep topics (comma separated)"
                   value={individualPrepTopicsText}
                   onChange={(e) => setIndividualPrepTopicsText(e.target.value)}
-                  className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                  className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground"
                 />
               ) : null}
               {individualMailType === "interview_schedule" ? (
@@ -699,19 +699,19 @@ export default function PlacementGroupDetailPage() {
                     type="date"
                     value={individualInterviewDate}
                     onChange={(e) => setIndividualInterviewDate(e.target.value)}
-                    className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                    className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground"
                   />
                   <Input
                     type="time"
                     value={individualInterviewStart}
                     onChange={(e) => setIndividualInterviewStart(e.target.value)}
-                    className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                    className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground"
                   />
                   <Input
                     type="time"
                     value={individualInterviewEnd}
                     onChange={(e) => setIndividualInterviewEnd(e.target.value)}
-                    className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700"
+                    className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground"
                   />
                 </div>
               ) : null}
@@ -721,13 +721,13 @@ export default function PlacementGroupDetailPage() {
                     placeholder="Custom subject"
                     value={individualCustomSubject}
                     onChange={(e) => setIndividualCustomSubject(e.target.value)}
-                    className="h-9 rounded-full bg-slate-50 border-transparent hover:bg-slate-100 px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                    className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground"
                   />
                   <Textarea
                     value={individualCustomBody}
                     onChange={(e) => setIndividualCustomBody(e.target.value)}
                     placeholder="Custom body (supports {student_name}, {company_name})"
-                    className="min-h-[100px] w-full rounded-2xl bg-slate-50 border-transparent hover:bg-slate-100 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400"
+                    className="min-h-[100px] w-full rounded-2xl bg-background border-input px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
               ) : null}
@@ -737,14 +737,14 @@ export default function PlacementGroupDetailPage() {
                 variant="outline"
                 onClick={closeIndividualMailComposer}
                 disabled={individualMailing}
-                className="h-9 rounded-full px-4 border-slate-200 text-slate-700 hover:bg-slate-50"
+                className="h-9 rounded-full px-4 border-border/80 font-medium"
               >
                 Cancel
               </Button>
               <Button
                 onClick={() => void sendIndividualMail()}
                 disabled={individualMailing}
-                className="h-9 rounded-full px-4 bg-blue-600 hover:bg-blue-700 text-white"
+                className="h-9 rounded-full px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
               >
                 {individualMailing ? "Sending..." : "Send mail"}
               </Button>

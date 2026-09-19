@@ -88,7 +88,7 @@ export function AudienceSection() {
           >
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <Users2 className="size-6" />
                 </div>
                 <span className="text-xs font-mono font-semibold text-muted-foreground uppercase tracking-wider">
@@ -107,15 +107,15 @@ export function AudienceSection() {
 
               <ul className="space-y-3 pt-2 text-sm text-foreground/90">
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="size-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
                   <span>Enforce marksheet-verified CGPA and backlog rules over unverified self-claims.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="size-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
                   <span>Parse job descriptions instantly and rank candidates with clear matched vs. missing criteria.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
-                  <CheckCircle2 className="size-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="size-4 text-primary shrink-0 mt-0.5" />
                   <span>Export audit-ready shortlists in CSV format for visiting recruiting teams.</span>
                 </li>
               </ul>
@@ -124,7 +124,7 @@ export function AudienceSection() {
             <div className="pt-8 mt-8 border-t border-border/60">
               <Link
                 href="/tpo"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
               >
                 <span>Access TPO Console</span>
                 <ArrowRight className="size-4" />

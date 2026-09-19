@@ -11,6 +11,7 @@ import {
   getStoredTpoUsername,
 } from "@/lib/auth-storage";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { PaletteSwitcher } from "@/components/theme/palette-switcher";
 import { cn } from "@/lib/utils";
 
 function formatUserLabel(email: string | null, rollNo: string | null): string {
@@ -68,40 +69,28 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
-          <Link
-            href="#audience"
-            className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
-          >
-            Who It&apos;s For
-          </Link>
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
           <Link
             href="#how-it-works"
-            className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             How It Works
           </Link>
           <Link
             href="#trust"
-            className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             Verification
           </Link>
           <Link
             href="#architecture"
-            className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            Cloud Architecture
-          </Link>
-          <Link
-            href="#roadmap"
-            className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
-          >
-            Product Stage
+            Architecture
           </Link>
           <Link
             href="#faq"
-            className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             FAQ
           </Link>
@@ -110,24 +99,22 @@ export function Navbar() {
         {/* Action Buttons */}
         <div className="hidden sm:flex items-center gap-3">
           {studentLoggedIn || tpoLoggedIn ? (
-            <>
-              <span className="text-xs font-medium text-muted-foreground hidden md:inline-block">
-                Signed in as <strong className="text-foreground">{userLabel}</strong>
-              </span>
-              <Link
-                href={tpoLoggedIn ? "/tpo" : "/profile"}
-                className={cn(buttonVariants({ size: "sm" }), "rounded-full shadow-xs px-5")}
-              >
-                {tpoLoggedIn ? "TPO Dashboard" : "Student Profile"}
-              </Link>
-            </>
+            <Link
+              href={tpoLoggedIn ? "/tpo" : "/profile"}
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "rounded-full px-5 h-9 shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs transition-all"
+              )}
+            >
+              {tpoLoggedIn ? "TPO Dashboard" : "Student Profile"}
+            </Link>
           ) : (
             <>
               <Link
                 href="/login"
                 className={cn(
                   buttonVariants({ variant: "ghost", size: "sm" }),
-                  "rounded-full text-muted-foreground hover:text-foreground"
+                  "rounded-full text-xs font-medium text-muted-foreground hover:text-foreground px-3"
                 )}
               >
                 Sign In
@@ -136,7 +123,7 @@ export function Navbar() {
                 href="/demo"
                 className={cn(
                   buttonVariants({ size: "sm" }),
-                  "rounded-full px-5 shadow-xs gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                  "rounded-full px-4 h-9 shadow-xs gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs transition-all"
                 )}
               >
                 <Sparkles className="size-3.5" />
@@ -144,16 +131,22 @@ export function Navbar() {
               </Link>
             </>
           )}
+
+          <div className="h-4 w-px bg-border/80" />
+
+          {/* Compact Icon Theme Dropdown */}
+          <PaletteSwitcher variant="dropdown" compact />
         </div>
 
         {/* Mobile menu trigger */}
         <div className="flex lg:hidden items-center gap-2">
+          <PaletteSwitcher variant="dropdown" compact />
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
-            className="rounded-lg"
+            className="rounded-full size-9"
           >
             {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </Button>
@@ -164,13 +157,6 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl px-4 py-6 space-y-4 shadow-xl">
           <div className="flex flex-col space-y-2">
-            <Link
-              href="#audience"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 text-sm font-medium text-foreground rounded-md hover:bg-muted"
-            >
-              Who It&apos;s For
-            </Link>
             <Link
               href="#how-it-works"
               onClick={() => setMobileMenuOpen(false)}
@@ -190,14 +176,7 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className="px-3 py-2 text-sm font-medium text-foreground rounded-md hover:bg-muted"
             >
-              Cloud Architecture
-            </Link>
-            <Link
-              href="#roadmap"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 text-sm font-medium text-foreground rounded-md hover:bg-muted"
-            >
-              Product Stage
+              Architecture
             </Link>
             <Link
               href="#faq"
@@ -208,7 +187,11 @@ export function Navbar() {
             </Link>
           </div>
 
-          <div className="pt-4 border-t border-border/40 flex flex-col gap-2">
+          <div className="pt-4 border-t border-border/40 flex flex-col gap-3">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider font-mono">Theme</span>
+              <PaletteSwitcher variant="dropdown" />
+            </div>
             {studentLoggedIn || tpoLoggedIn ? (
               <Link
                 href={tpoLoggedIn ? "/tpo" : "/profile"}

@@ -69,24 +69,24 @@ export default function PlacementGroupsPage() {
     <div className="flex-1 overflow-y-auto p-8 rounded-[2rem] w-full h-full">
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <section>
-          <h1 className="text-3xl font-bold text-slate-900">Placement Groups</h1>
-          <p className="text-slate-600">
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Placement Groups</h1>
+          <p className="text-muted-foreground text-sm">
             Review all analysis groups and open any group for detailed member actions.
           </p>
         </section>
 
         {loading ? (
-          <div className="h-48 flex items-center justify-center text-slate-500">
+          <div className="h-48 flex items-center justify-center text-muted-foreground">
             <Loader2 className="h-5 w-5 mr-2 animate-spin" />
             Loading groups...
           </div>
         ) : error ? (
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="py-6 text-red-700">{error}</CardContent>
+          <Card className="border-destructive/30 bg-destructive/10">
+            <CardContent className="py-6 text-destructive">{error}</CardContent>
           </Card>
         ) : sortedGroups.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="py-12 text-center text-slate-500">
+          <Card className="border-dashed border-border">
+            <CardContent className="py-12 text-center text-muted-foreground">
               No groups created yet. Create one from the candidates page.
             </CardContent>
           </Card>
@@ -97,18 +97,19 @@ export default function PlacementGroupsPage() {
               const groupLabel = group.title?.trim() || "Untitled Group";
               return (
               <Link key={group.id} href={`/tpo/placement-groups/${group.id}`}>
-                <Card className="h-full hover:shadow-md transition-shadow border-slate-200/70">
+                <Card className="h-full hover:shadow-md transition-shadow border-border/80 bg-card text-card-foreground">
                   <CardHeader className="space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-lg">{companyLabel} / {groupLabel}</CardTitle>
+                      <CardTitle className="text-lg text-card-foreground">{companyLabel} / {groupLabel}</CardTitle>
                       <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="gap-1">
+                        <Badge variant="secondary" className="gap-1 border-border/60">
                           <Users className="h-3.5 w-3.5" />
                           {group.members.length}
                         </Badge>
                         <Button
                           size="sm"
                           variant="outline"
+                          className="rounded-full border-border/80 font-medium"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -119,22 +120,22 @@ export default function PlacementGroupsPage() {
                         </Button>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       Created by {group.created_by} on{" "}
                       {new Date(group.created_at).toLocaleDateString()}
                     </p>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-slate-600 line-clamp-3">
+                    <p className="text-sm text-muted-foreground line-clamp-3">
                       {group.jd_summary?.trim() || "No JD summary captured for this group."}
                     </p>
-                    <p className="mt-2 text-xs text-slate-500">
+                    <p className="mt-2 text-xs text-muted-foreground">
                       Company: {group.company_name || "Not captured"} · Role: {group.role_type || "Not captured"}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Pay/Stipend: {group.pay_or_stipend || "Not captured"} · Duration: {group.duration || "Not captured"}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Bond: {group.bond_details || "Not captured"}
                     </p>
                   </CardContent>

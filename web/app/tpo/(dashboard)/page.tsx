@@ -294,7 +294,7 @@ export default function TpoDashboardRootPage() {
             <span>Active</span>
           </div>
 
-          <div className="size-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 border-2 border-white shadow-xs flex items-center justify-center font-bold text-white text-xs shrink-0">
+          <div className="size-9 rounded-full bg-primary text-primary-foreground border-2 border-border/60 shadow-xs flex items-center justify-center font-bold text-xs shrink-0">
             TP
           </div>
         </div>
@@ -642,71 +642,6 @@ export default function TpoDashboardRootPage() {
               >
                 Next →
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Bento Card 5: Placement Screening Velocity Chart */}
-        <div className="w-full bg-card text-card-foreground rounded-3xl p-6 md:p-7 shadow-xs border border-border/80 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-bold text-card-foreground tracking-tight">
-                Placement Screening Velocity
-              </h3>
-              <p className="text-xs text-muted-foreground">Total matched student volume evaluated over past 7 days</p>
-            </div>
-            <button className="flex items-center gap-1.5 bg-muted hover:bg-muted/80 text-xs font-semibold text-foreground px-3.5 py-1.5 rounded-full border border-border transition-colors cursor-pointer">
-              <span>Last 7 days</span>
-              <ChevronRight className="size-3.5 text-muted-foreground rotate-90" />
-            </button>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pt-6">
-            <div className="mb-2">
-              <span className="text-3xl md:text-5xl font-extrabold text-foreground/40 tracking-tight">
-                {overview?.total_students ?? 1420}
-                <span className="text-sm md:text-base font-semibold text-muted-foreground ml-1">profiles</span>
-              </span>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-1 flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Peak shortlisting speed: 280 profiles/hour</span>
-              </p>
-            </div>
-
-            {/* Stylized Weekly Velocity Bars */}
-            <div className="flex items-end gap-3 sm:gap-4 h-36 sm:h-44 pb-1 self-center sm:self-auto">
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-muted rounded-full h-16" />
-                <span className="text-[10px] text-muted-foreground font-semibold">Mon</span>
-              </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-muted rounded-full h-24" />
-                <span className="text-[10px] text-muted-foreground font-semibold">Tue</span>
-              </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-muted rounded-full h-20" />
-                <span className="text-[10px] text-muted-foreground font-semibold">Wed</span>
-              </div>
-              <div className="flex flex-col items-center gap-1.5 relative">
-                <div className="absolute -top-7 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
-                  <span className="size-1.5 rounded-full bg-emerald-400" />
-                  <span>648</span>
-                </div>
-                <div className="w-6 sm:w-10 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-full h-36 shadow-xs" />
-                <span className="text-[10px] text-foreground font-bold">Thu</span>
-              </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-muted rounded-full h-28" />
-                <span className="text-[10px] text-muted-foreground font-semibold">Fri</span>
-              </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-muted rounded-full h-16" />
-                <span className="text-[10px] text-muted-foreground font-semibold">Sat</span>
-              </div>
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="w-6 sm:w-10 bg-muted rounded-full h-32" />
-                <span className="text-[10px] text-muted-foreground font-semibold">Sun</span>
-              </div>
             </div>
           </div>
         </div>

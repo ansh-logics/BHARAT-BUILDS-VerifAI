@@ -66,7 +66,7 @@ export default function PlacementGroupsPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 rounded-[2rem] w-full h-full">
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 w-full h-full pb-10">
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <section>
           <h1 className="text-3xl font-bold text-foreground tracking-tight">Placement Groups</h1>

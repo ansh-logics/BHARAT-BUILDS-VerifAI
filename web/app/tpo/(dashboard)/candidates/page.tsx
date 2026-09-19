@@ -651,7 +651,7 @@ export default function TpoDashboardPage() {
   }, [isInputExpanded]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 rounded-[2rem] w-full h-full pb-32">
+    <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 w-full h-full pb-32">
       <div className="mx-auto w-full max-w-7xl space-y-8">
             <section className="grid gap-4 md:grid-cols-4">
               <Card className="bg-card text-card-foreground rounded-3xl border border-border/80 shadow-xs"><CardHeader className="pb-2 pt-5 px-5 flex flex-row items-center justify-between"><CardTitle className="text-sm font-medium text-muted-foreground">Total Students</CardTitle><Users className="size-4 text-muted-foreground" /></CardHeader><CardContent className="px-5 pb-5"><div className="text-4xl font-semibold tracking-tight text-card-foreground">{summary.total}</div></CardContent></Card>

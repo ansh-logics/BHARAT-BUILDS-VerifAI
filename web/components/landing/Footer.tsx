@@ -21,12 +21,12 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
-              The explainable AI placement and verification platform for Indian universities and technology recruiters. Multi-agent proof checking with zero resume fraud.
+              Placement intelligence workspace for college TPOs and career cells. Cross-verifies student evidence to create transparent, explainable placement decisions.
             </p>
             <div className="flex items-center gap-2 pt-2">
               <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[11px] font-medium text-muted-foreground">
-                All Verification Engines Operational
+                Verification Pipeline Operational
               </span>
             </div>
           </div>
@@ -34,12 +34,12 @@ export function Footer() {
           {/* Col 1: Product */}
           <div className="space-y-3">
             <div className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Product
+              Workspace
             </div>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
-                <Link href="/demo" className="hover:text-foreground transition-colors">
-                  Live Interactive Demo
+                <Link href="/demo" className="hover:text-foreground transition-colors font-medium text-primary">
+                  Interactive Live Demo
                 </Link>
               </li>
               <li>
@@ -53,61 +53,61 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="#features" className="hover:text-foreground transition-colors">
-                  Features Breakdown
-                </Link>
-              </li>
-              <li>
-                <Link href="#pricing" className="hover:text-foreground transition-colors">
-                  Pricing Plans
+                <Link href="#how-it-works" className="hover:text-foreground transition-colors">
+                  How It Works
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Col 2: Solutions */}
+          {/* Col 2: Evidence & Security */}
           <div className="space-y-3">
             <div className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Solutions
+              Verification
             </div>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
-                <Link href="#solution" className="hover:text-foreground transition-colors">
-                  Marksheet OCR Verification
+                <Link href="#trust" className="hover:text-foreground transition-colors">
+                  Marksheet OCR Truth
                 </Link>
               </li>
               <li>
-                <Link href="#solution" className="hover:text-foreground transition-colors">
-                  GitHub Originality Audit
+                <Link href="#trust" className="hover:text-foreground transition-colors">
+                  GitHub & Coding Evidence
                 </Link>
               </li>
               <li>
-                <Link href="#features" className="hover:text-foreground transition-colors">
-                  Natural Language JD Search
+                <Link href="#trust" className="hover:text-foreground transition-colors">
+                  Explainable Candidate Matching
                 </Link>
               </li>
               <li>
-                <Link href="#features" className="hover:text-foreground transition-colors">
-                  Placement Cohorts & CSV
-                </Link>
-              </li>
-              <li>
-                <Link href="#faq" className="hover:text-foreground transition-colors">
-                  AWS S3 HMAC Security
+                <Link href="#architecture" className="hover:text-foreground transition-colors">
+                  Private S3 Document Storage
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Col 3: Legal & Resources */}
+          {/* Col 3: Architecture & Stage */}
           <div className="space-y-3">
             <div className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Resources & Legal
+              Platform
             </div>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
+                <Link href="#architecture" className="hover:text-foreground transition-colors">
+                  AWS Cloud Architecture
+                </Link>
+              </li>
+              <li>
+                <Link href="#roadmap" className="hover:text-foreground transition-colors">
+                  Product Stage & Scaling
+                </Link>
+              </li>
+              <li>
                 <Link href="#faq" className="hover:text-foreground transition-colors">
-                  FAQ & Documentation
+                  Institutional FAQ
                 </Link>
               </li>
               <li>
@@ -121,32 +121,17 @@ export function Footer() {
                   <span>GitHub Repository</span>
                 </a>
               </li>
-              <li>
-                <span className="cursor-pointer hover:text-foreground transition-colors">
-                  Privacy Policy
-                </span>
-              </li>
-              <li>
-                <span className="cursor-pointer hover:text-foreground transition-colors">
-                  Terms of Service
-                </span>
-              </li>
-              <li>
-                <span className="cursor-pointer hover:text-foreground transition-colors">
-                  Security Disclosures
-                </span>
-              </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div>
-            © {new Date().getFullYear()} VerifAI Inc. Built for transparent, audit-proof campus placements.
+            © {new Date().getFullYear()} VerifAI. Placement intelligence for college TPOs.
           </div>
           <div className="flex items-center gap-6">
-            <span>ISO / IEC 27001 Certified Architecture</span>
-            <span>AWS Cloud Native</span>
+            <span>Dedicated College Workspace</span>
+            <span>AWS Cloud Architecture</span>
           </div>
         </div>
       </div>

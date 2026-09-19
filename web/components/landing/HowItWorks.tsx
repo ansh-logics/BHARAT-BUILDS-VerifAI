@@ -2,54 +2,62 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Cpu, FileUp, Sparkles } from "lucide-react";
+import { FileUp, Cpu, Sparkles, TrendingUp, CheckCircle2 } from "lucide-react";
 
 const STEPS = [
   {
     step: "01",
     icon: FileUp,
-    title: "Upload Records & Handles",
+    title: "Collect evidence",
     description:
-      "Students upload their academic marksheets and resume PDFs, and connect their public GitHub and LeetCode usernames through a self-serve portal.",
-    highlight: "Encrypted S3 Document Storage",
+      "Students submit resumes, marksheets, and coding-profile details.",
+    highlight: "Multi-Source Submission",
   },
   {
     step: "02",
     icon: Cpu,
-    title: "AI Multi-Agent Audit",
+    title: "Verify and analyze",
     description:
-      "VerifAI extracts CGPA & active backlogs via OCR, inspects GitHub repositories for genuine code originality, and compiles a fraud-proof candidate profile.",
-    highlight: "Zero Hallucination Scrutiny",
+      "VeriAI extracts skills, analyzes coding evidence, and uses marksheet data as the academic source of truth.",
+    highlight: "Academic Truth & OCR",
   },
   {
     step: "03",
     icon: Sparkles,
-    title: "Match JDs & Export Roster",
+    title: "Match to opportunities",
     description:
-      "TPOs paste job descriptions or upload recruiter specs. VerifAI parses criteria deterministically and generates an explainable shortlist ready for CSV export.",
-    highlight: "Instant Verified Shortlists",
+      "TPOs add a job description and receive ranked candidates with transparent match evidence.",
+    highlight: "Explainable Ranking",
+  },
+  {
+    step: "04",
+    icon: TrendingUp,
+    title: "Guide improvement",
+    description:
+      "Students receive readiness signals and practical actions to improve.",
+    highlight: "Actionable Feedback",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 md:py-28 bg-background relative overflow-hidden">
+    <section id="how-it-works" className="py-20 md:py-28 bg-muted/20 border-y border-border/40 relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         {/* Header */}
-        <div className="text-center space-y-3 max-w-3xl mx-auto">
+        <div className="text-center space-y-3 max-w-3xl mx-auto mb-16">
           <h2 className="text-xs font-mono font-semibold tracking-widest uppercase text-primary">
-            How It Works
+            Workflow Overview
           </h2>
           <h3 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground text-balance">
-            Just 3 steps to audit-proof placements
+            How VeriAI Works
           </h3>
-          <p className="text-base sm:text-lg text-muted-foreground pt-2 text-balance">
-            Replace manual spreadsheets and speculative keyword scans with automated verification and explainable recruiter rankings.
+          <p className="text-base sm:text-lg text-muted-foreground pt-1 text-balance">
+            A structured four-stage pipeline from primary document submission to audit-proof candidate shortlists.
           </p>
         </div>
 
-        {/* Steps Grid */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+        {/* 4 Steps Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
           {STEPS.map((item, idx) => {
             const Icon = item.icon;
             return (
@@ -58,12 +66,12 @@ export function HowItWorks() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.15 }}
-                className="group relative rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-sm hover:border-primary/40 hover:shadow-md transition-all flex flex-col justify-between"
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="group relative rounded-2xl border border-border/80 bg-card p-6 shadow-xs hover:border-primary/40 hover:shadow-sm transition-all flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-3xl font-extrabold text-muted-foreground/40 group-hover:text-primary/60 transition-colors">
+                    <span className="font-mono text-2xl font-extrabold text-muted-foreground/40 group-hover:text-primary/60 transition-colors">
                       {item.step}
                     </span>
                     <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -71,7 +79,7 @@ export function HowItWorks() {
                     </div>
                   </div>
 
-                  <h4 className="text-xl font-bold text-foreground tracking-tight">
+                  <h4 className="text-lg font-bold text-foreground tracking-tight">
                     {item.title}
                   </h4>
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -79,9 +87,11 @@ export function HowItWorks() {
                   </p>
                 </div>
 
-                <div className="mt-8 pt-4 border-t border-border/60 flex items-center justify-between text-xs font-semibold text-primary">
-                  <span>{item.highlight}</span>
-                  <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+                <div className="mt-6 pt-4 border-t border-border/60 flex items-center">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                    <CheckCircle2 className="size-3 text-primary" />
+                    <span>{item.highlight}</span>
+                  </span>
                 </div>
               </motion.div>
             );

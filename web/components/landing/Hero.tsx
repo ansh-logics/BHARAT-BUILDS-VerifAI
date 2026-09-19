@@ -9,13 +9,11 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
-  ExternalLink,
   FileCheck,
   Lock,
   RotateCw,
   Search,
   Sparkles,
-  Zap,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +24,7 @@ export function Hero() {
   const [selectedClarification, setSelectedClarification] = useState<string | null>("unplaced");
 
   return (
-    <section id="hero" className="relative overflow-hidden pt-24 pb-20 md:pt-32 md:pb-28">
+    <section id="hero" className="relative overflow-hidden pt-24 pb-14 md:pt-32 md:pb-20">
       {/* Background Ambient Glow */}
       <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 -z-10 h-[600px] w-full max-w-7xl">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 size-[500px] rounded-full bg-primary/10 blur-[120px]" />
@@ -34,24 +32,19 @@ export function Hero() {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
-        {/* Announcement Chip */}
+        {/* Eyebrow */}
         <motion.div
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="mb-8"
+          className="mb-6"
         >
-          <Link
-            href="/demo"
-            className="group inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-md shadow-2xs hover:border-primary/40 hover:text-foreground transition-all"
-          >
-            <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-              <Sparkles className="size-3" />
-              <span>VerifAI 2.0</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/80 bg-background/80 px-3.5 py-1 text-xs font-semibold text-primary backdrop-blur-md shadow-2xs">
+            <span className="flex size-2 rounded-full bg-primary animate-pulse" />
+            <span className="tracking-wider uppercase font-mono text-[11px]">
+              VERIFIED PLACEMENT INTELLIGENCE
             </span>
-            <span>Multi-Agent Placement Screening & Verification</span>
-            <ChevronRight className="size-3.5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-          </Link>
+          </div>
         </motion.div>
 
         {/* Main Headline */}
@@ -61,21 +54,20 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
           className="max-w-4xl text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance"
         >
-          Automate campus placements with{" "}
+          Turn student evidence into{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-indigo-600 to-blue-500">
-            explainable AI
+            explainable placement decisions.
           </span>
         </motion.h1>
 
-        {/* Subtitle */}
+        {/* Supporting Copy */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-          className="mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed text-balance"
+          className="mt-6 max-w-3xl text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed text-balance"
         >
-          Cross-verify student resumes, GitHub commits, LeetCode handles, and official marksheets.
-          Extract strict JD constraints and generate audit-ready candidate shortlists in seconds.
+          VeriAI brings resumes, marksheets, GitHub, and coding-platform evidence into one structured profile, helping placement teams verify eligibility, understand readiness, and create transparent shortlists.
         </motion.p>
 
         {/* Action Buttons */}
@@ -86,47 +78,36 @@ export function Hero() {
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto"
         >
           <Link
-            href="/register"
+            href="/demo"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "w-full sm:w-auto rounded-full px-8 shadow-md gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+              "w-full sm:w-auto rounded-full px-8 shadow-md gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
             )}
           >
-            <Zap className="size-4" />
-            <span>Get Started Free</span>
+            <Sparkles className="size-4" />
+            <span>Explore Live Demo</span>
             <ArrowRight className="size-4" />
           </Link>
 
           <Link
-            href="/tpo"
+            href="#how-it-works"
             className={cn(
               buttonVariants({ variant: "outline", size: "lg" }),
               "w-full sm:w-auto rounded-full px-8 border-border hover:bg-muted/60 font-medium"
             )}
           >
-            <span>TPO Console</span>
-            <ExternalLink className="size-4 ml-1.5 opacity-60" />
-          </Link>
-
-          <Link
-            href="/demo"
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "lg" }),
-              "w-full sm:w-auto rounded-full px-6 text-muted-foreground hover:text-foreground font-medium"
-            )}
-          >
-            <span>Try Live Demo</span>
+            <span>See How It Works</span>
           </Link>
         </motion.div>
 
-        {/* Trust Badges Note */}
+        {/* Product Positioning Trust Pill */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-4 text-xs text-muted-foreground"
+          className="mt-5 text-xs text-muted-foreground font-medium"
         >
-          100% automated & auditable verification. Zero credit card required.
+          Single-college placement workspace · Verified transcripts & code evidence · Zero black-box ranking
         </motion.p>
 
         {/* High-Fidelity Simulated Browser Window Mockup */}
@@ -135,8 +116,14 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
           className="relative mt-14 w-full max-w-5xl"
+          style={{
+            maskImage:
+              "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.5) 75%, rgba(0,0,0,0.15) 90%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0.5) 75%, rgba(0,0,0,0.15) 90%, transparent 100%)",
+          }}
         >
-          <div className="relative rounded-2xl border border-border/80 bg-card shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden ring-1 ring-border/50 text-left">
+          <div className="relative rounded-2xl border border-border/80 bg-card shadow-[0_20px_50px_rgba(0,0,0,0.08)] overflow-hidden ring-1 ring-border/50 text-left">
             {/* Browser Header Bar */}
             <div className="flex items-center justify-between border-b border-border/60 bg-muted/40 px-4 py-3">
               <div className="flex items-center gap-2">
@@ -154,7 +141,7 @@ export function Hero() {
             </div>
 
             {/* Inner Dashboard Preview */}
-            <div className="p-5 sm:p-7 space-y-6 bg-gradient-to-b from-background to-muted/20">
+            <div className="p-5 sm:p-7 pb-8 sm:pb-9 space-y-6 bg-gradient-to-b from-background via-background to-muted/20">
               {/* Filter / Prompt Summary Strip */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-xl bg-muted/40 border border-border/60">
                 <div className="flex items-center gap-2.5">
@@ -166,67 +153,68 @@ export function Hero() {
                       JD: &quot;Full Stack Engineer — React, Node.js, TypeScript, Min 7.5 CGPA, No Backlogs&quot;
                     </div>
                     <div className="text-[11px] text-muted-foreground">
-                      Parsed 128 Candidates · 34 Eligible · Target 5 Shortlisted
+                      Drive #2026-FSE · 34 Verified Students Evaluated · Matched Criteria
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">
                     <Check className="size-3 mr-1" />
-                    Verified Profiles
+                    Marksheet Verified
                   </Badge>
                   <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-[10px]">
                     <BrainCircuit className="size-3 mr-1" />
-                    AI Scored
+                    Explainable Match
                   </Badge>
                 </div>
               </div>
 
-              {/* Floating Clarification Capsule Interactive Pill */}
+              {/* Clarification Capsule Interactive Pill */}
               <div className="rounded-xl border border-indigo-200/80 bg-gradient-to-r from-indigo-50/80 via-sky-50/40 to-background p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
                 <div className="flex items-center gap-2">
                   <div className="size-6 rounded-md bg-indigo-600 text-white flex items-center justify-center shrink-0">
                     <Sparkles className="size-3.5" />
                   </div>
-                  <div>
-                    <span className="text-xs font-semibold text-indigo-950">AI Clarification: </span>
-                    <span className="text-xs text-indigo-900">Are you looking for unplaced students only or placed as well?</span>
-                  </div>
+                  <span className="text-xs font-medium text-foreground">
+                    <strong className="text-indigo-950 font-semibold">TPO Criteria:</strong> Are you filtering for unplaced students only or all eligible candidates?
+                  </span>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 self-end sm:self-auto">
                   <button
                     type="button"
                     onClick={() => setSelectedClarification("unplaced")}
-                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    className={cn(
+                      "px-3 py-1 rounded-lg text-xs font-medium transition-all",
                       selectedClarification === "unplaced"
-                        ? "bg-indigo-600 text-white shadow-xs"
-                        : "bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50"
-                    }`}
+                        ? "bg-indigo-600 text-white shadow-2xs"
+                        : "bg-background/80 text-muted-foreground hover:text-foreground border border-border/60"
+                    )}
                   >
-                    <Check className="size-3" />
-                    <span>Unplaced Only</span>
+                    <Check className="size-3 inline-block mr-1" />
+                    Unplaced Only
                   </button>
                   <button
                     type="button"
                     onClick={() => setSelectedClarification("all")}
-                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    className={cn(
+                      "px-3 py-1 rounded-lg text-xs font-medium transition-all",
                       selectedClarification === "all"
-                        ? "bg-indigo-600 text-white shadow-xs"
-                        : "bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50"
-                    }`}
+                        ? "bg-indigo-600 text-white shadow-2xs"
+                        : "bg-background/80 text-muted-foreground hover:text-foreground border border-border/60"
+                    )}
                   >
-                    <span>Placed as Well</span>
+                    Placed as Well
                   </button>
                 </div>
               </div>
 
-              {/* Candidate Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              {/* Candidates Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Candidate 1 */}
                 <div className="p-4 rounded-xl border border-border/80 bg-card hover:border-primary/40 hover:shadow-sm transition-all space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="size-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                      <div className="size-9 rounded-full bg-emerald-50 text-emerald-700 font-bold flex items-center justify-center text-xs">
                         AS
                       </div>
                       <div>
@@ -332,11 +320,11 @@ export function Hero() {
               </div>
             </div>
           </div>
-
-          {/* Bottom Gradient Fade */}
-          <div className="pointer-events-none absolute inset-x-0 -bottom-8 h-24 bg-gradient-to-t from-background to-transparent" />
         </motion.div>
       </div>
+
+      {/* Full-width ambient blend into next section */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 }

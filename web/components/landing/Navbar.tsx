@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, Menu, X } from "lucide-react";
+import { BrainCircuit, Menu, Sparkles, X } from "lucide-react";
 import {
   getStoredEmail,
   getStoredRollNo,
@@ -64,55 +64,46 @@ export function Navbar() {
             <span className="font-bold text-xl tracking-tight text-foreground">
               Verif<span className="text-primary font-black">AI</span>
             </span>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-              2.0
-            </span>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
           <Link
-            href="#problem"
+            href="#audience"
             className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
           >
-            Problem
-          </Link>
-          <Link
-            href="#solution"
-            className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
-          >
-            Solution
+            Who It&apos;s For
           </Link>
           <Link
             href="#how-it-works"
             className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
           >
-            How it Works
+            How It Works
           </Link>
           <Link
-            href="#features"
+            href="#trust"
             className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
           >
-            Features
+            Verification
           </Link>
           <Link
-            href="#pricing"
+            href="#architecture"
             className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
           >
-            Pricing
+            Cloud Architecture
+          </Link>
+          <Link
+            href="#roadmap"
+            className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+          >
+            Product Stage
           </Link>
           <Link
             href="#faq"
             className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
           >
             FAQ
-          </Link>
-          <Link
-            href="/demo"
-            className="px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
-          >
-            Live Demo
           </Link>
         </nav>
 
@@ -139,17 +130,17 @@ export function Navbar() {
                   "rounded-full text-muted-foreground hover:text-foreground"
                 )}
               >
-                Login
+                Sign In
               </Link>
               <Link
-                href="/register"
+                href="/demo"
                 className={cn(
                   buttonVariants({ size: "sm" }),
-                  "rounded-full px-5 shadow-xs gap-1.5 bg-primary hover:bg-primary/90"
+                  "rounded-full px-5 shadow-xs gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
                 )}
               >
-                <span>Get Started Free</span>
-                <ArrowRight className="size-3.5" />
+                <Sparkles className="size-3.5" />
+                <span>Live Demo</span>
               </Link>
             </>
           )}
@@ -174,39 +165,39 @@ export function Navbar() {
         <div className="lg:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl px-4 py-6 space-y-4 shadow-xl">
           <div className="flex flex-col space-y-2">
             <Link
-              href="#problem"
+              href="#audience"
               onClick={() => setMobileMenuOpen(false)}
               className="px-3 py-2 text-sm font-medium text-foreground rounded-md hover:bg-muted"
             >
-              Problem
-            </Link>
-            <Link
-              href="#solution"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 text-sm font-medium text-foreground rounded-md hover:bg-muted"
-            >
-              Solution
+              Who It&apos;s For
             </Link>
             <Link
               href="#how-it-works"
               onClick={() => setMobileMenuOpen(false)}
               className="px-3 py-2 text-sm font-medium text-foreground rounded-md hover:bg-muted"
             >
-              How it Works
+              How It Works
             </Link>
             <Link
-              href="#features"
+              href="#trust"
               onClick={() => setMobileMenuOpen(false)}
               className="px-3 py-2 text-sm font-medium text-foreground rounded-md hover:bg-muted"
             >
-              Features
+              Verification
             </Link>
             <Link
-              href="#pricing"
+              href="#architecture"
               onClick={() => setMobileMenuOpen(false)}
               className="px-3 py-2 text-sm font-medium text-foreground rounded-md hover:bg-muted"
             >
-              Pricing
+              Cloud Architecture
+            </Link>
+            <Link
+              href="#roadmap"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 text-sm font-medium text-foreground rounded-md hover:bg-muted"
+            >
+              Product Stage
             </Link>
             <Link
               href="#faq"
@@ -215,19 +206,13 @@ export function Navbar() {
             >
               FAQ
             </Link>
-            <Link
-              href="/demo"
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2 text-sm font-medium text-primary rounded-md hover:bg-primary/10"
-            >
-              Live Demo
-            </Link>
           </div>
 
           <div className="pt-4 border-t border-border/40 flex flex-col gap-2">
             {studentLoggedIn || tpoLoggedIn ? (
               <Link
                 href={tpoLoggedIn ? "/tpo" : "/profile"}
+                onClick={() => setMobileMenuOpen(false)}
                 className={cn(buttonVariants(), "w-full rounded-full")}
               >
                 {tpoLoggedIn ? "TPO Dashboard" : "Student Profile"}
@@ -236,15 +221,18 @@ export function Navbar() {
               <>
                 <Link
                   href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
                   className={cn(buttonVariants({ variant: "outline" }), "w-full rounded-full")}
                 >
-                  Login
+                  Sign In
                 </Link>
                 <Link
-                  href="/register"
-                  className={cn(buttonVariants(), "w-full rounded-full")}
+                  href="/demo"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(buttonVariants(), "w-full rounded-full gap-2")}
                 >
-                  Get Started Free
+                  <Sparkles className="size-4" />
+                  <span>Live Demo</span>
                 </Link>
               </>
             )}

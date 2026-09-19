@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   Accordion,
   AccordionContent,
@@ -10,34 +11,34 @@ import {
 
 const FAQS = [
   {
-    question: "How does VerifAI prevent fake resume claims and inflated skills?",
+    question: "Is VeriAI available for any college to sign up today?",
     answer:
-      "VerifAI uses multi-agent verification to cross-examine claims across three independent sources. We inspect marksheet PDFs with OCR to confirm true CGPA and active backlogs, examine public GitHub repositories to measure genuine commit volume and commit recency, and verify LeetCode problem-solving ratings.",
+      "VeriAI is currently deployed as a dedicated single-college placement intelligence workspace rather than a public multi-tenant SaaS. Placement cells can explore our full capabilities immediately through the live interactive demo workspace, which uses synthetic candidate datasets.",
   },
   {
-    question: "Can VerifAI process Indian university marksheets and grade scales?",
+    question: "How does VeriAI verify academic records against resume claims?",
     answer:
-      "Yes. The OCR engine is trained on diverse university marksheet layouts. It accurately calculates cumulative CGPA from semester SGPA breakdowns, isolates active vs cleared backlogs, and handles autonomous university grading rubrics without manual intervention.",
+      "VeriAI extracts cumulative CGPA and active backlog counts directly from university marksheet PDFs using OCR. The extracted marksheet data serves as the single source of academic truth, overriding any self-reported resume numbers.",
+  },
+  {
+    question: "What coding evidence is analyzed for technical candidates?",
+    answer:
+      "We inspect public GitHub activity (commit recency, originality, repository structure) and LeetCode problem-solving profiles to add verifiable technical context to candidates claiming software engineering competencies.",
   },
   {
     question: "How does natural language JD matching prevent AI hallucinations?",
     answer:
-      "VerifAI enforces a deterministic structured schema for JD parsing. Rather than generating speculative answers, our analyzer maps job descriptions into strict criteria (minimum CGPA, allowed branches, required frameworks, backlog rules) and mathematically calculates weighted candidate match scores.",
+      "Rather than generating speculative generative summaries, VeriAI parses job descriptions into deterministic constraints (minimum CGPA, permitted branches, required frameworks, backlog rules). Every candidate match displays clear matched skills, missing skills, and eligibility status.",
   },
   {
-    question: "Is student academic data private and securely stored?",
+    question: "How are student documents protected in the cloud?",
     answer:
-      "Yes. Student marksheets and verified resumes are stored in private AWS S3 buckets using AES-256 server-side encryption. Documents cannot be accessed publicly and are only accessible through secure, time-limited HMAC SHA-256 signed access tokens.",
+      "All student transcripts and resumes are stored in private AWS S3 buckets using AES-256 server-side encryption. Documents cannot be accessed publicly and are retrieved solely via time-limited, HMAC SHA-256 signed access tokens governed by AWS IAM policies.",
   },
   {
-    question: "Can placement officers export candidate shortlists directly to CSV?",
+    question: "Can placement officers export candidate shortlists?",
     answer:
-      "Yes. Any shortlisted candidate pool can be exported in one click to a clean, formatted CSV sheet containing candidate names, verified CGPAs, match percentages, skill breakdown scores, and direct links to verified resumes.",
-  },
-  {
-    question: "What are interactive AI Clarifications in the search composer?",
-    answer:
-      "When a recruiter's job description leaves key constraints ambiguous (such as whether already-placed students should be excluded or if active backlogs are permissible), VerifAI dynamically displays floating clarification capsules above the composer with one-click resolution chips.",
+      "Yes. Any shortlisted candidate roster can be exported directly to a structured CSV file containing verified CGPA, match scores, skill breakdown evidence, and links to verified documents for visiting recruiting panels.",
   },
 ];
 
@@ -54,22 +55,22 @@ export function FaqSection() {
             Frequently Asked Questions
           </h3>
           <p className="text-base sm:text-lg text-muted-foreground pt-2 text-balance">
-            Everything you need to know about VerifAI&apos;s multi-agent evaluation, data security, and recruiter workflows.
+            Clear answers on VeriAI&apos;s architecture, evidence verification pipeline, and institutional deployment model.
           </p>
         </div>
 
-        {/* Accordion Component */}
-        <Accordion type="single" collapsible className="space-y-3">
+        {/* Accordion FAQ List */}
+        <Accordion type="single" collapsible className="w-full space-y-4">
           {FAQS.map((faq, idx) => (
             <AccordionItem
               key={idx}
-              value={`faq-${idx}`}
-              className="rounded-2xl border border-border/80 bg-card px-2 transition-all hover:border-primary/40"
+              value={`item-${idx}`}
+              className="rounded-2xl border border-border/80 bg-card px-6 shadow-2xs data-[state=open]:border-primary/40 transition-colors"
             >
-              <AccordionTrigger className="text-left font-semibold text-base py-4 px-4 hover:no-underline text-foreground">
+              <AccordionTrigger className="text-left font-semibold text-foreground py-5 text-base hover:no-underline">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground leading-relaxed px-4 pb-4">
+              <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-5">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
@@ -78,11 +79,11 @@ export function FaqSection() {
 
         {/* Support Note */}
         <div className="mt-12 text-center text-xs text-muted-foreground">
-          Have more questions? Check out our{" "}
-          <a href="/demo" className="text-primary font-semibold underline underline-offset-4">
+          Have more questions? Explore our{" "}
+          <Link href="/demo" className="text-primary font-semibold underline underline-offset-4">
             Interactive Live Demo
-          </a>{" "}
-          or explore the TPO portal.
+          </Link>{" "}
+          or access the TPO Console.
         </div>
       </div>
     </section>

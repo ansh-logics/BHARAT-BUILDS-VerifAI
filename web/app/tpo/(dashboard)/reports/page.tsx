@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Download, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { ChevronDown, Download, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -221,18 +221,21 @@ export default function TpoReportsPage() {
               onChange={(e) => setDateTo(e.target.value)}
               className="h-9 rounded-full bg-muted/50 border-input hover:bg-muted px-4 text-sm font-medium text-foreground"
             />
-            <select
-              value={branch}
-              onChange={(e) => setBranch(e.target.value)}
-              className="h-9 w-full rounded-full bg-muted/50 border border-input hover:bg-muted px-4 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
-            >
-              <option value="">All Branches</option>
-              {branchOptions.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
+            <div className="relative inline-flex items-center w-full">
+              <select
+                value={branch}
+                onChange={(e) => setBranch(e.target.value)}
+                className="h-9 w-full rounded-full bg-muted/50 border border-input hover:bg-muted pl-4 pr-9 text-sm font-medium text-foreground transition-colors cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-ring/30"
+              >
+                <option value="">All Branches</option>
+                {branchOptions.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+            </div>
             <Button
               onClick={() => void loadPreview()}
               disabled={loading}

@@ -8,6 +8,7 @@ import {
   Sparkles,
   Zap,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   ShieldCheck,
   TrendingUp,
@@ -313,16 +314,19 @@ export default function TpoDashboardRootPage() {
                   Fall 2025–26 Placement Screening Cycle
                 </p>
               </div>
-              <select
-                value={selectedCohort}
-                onChange={(e) => setSelectedCohort(e.target.value)}
-                aria-label="Filter by placement cohort"
-                className="text-xs font-semibold text-foreground bg-muted hover:bg-muted/80 px-3.5 py-1.5 rounded-full border border-border transition-colors cursor-pointer"
-              >
-                <option value="Class of 2026">Class of 2026</option>
-                <option value="Class of 2025">Class of 2025</option>
-                <option value="All Batches">All Batches</option>
-              </select>
+              <div className="relative inline-flex items-center">
+                <select
+                  value={selectedCohort}
+                  onChange={(e) => setSelectedCohort(e.target.value)}
+                  aria-label="Filter by placement cohort"
+                  className="text-xs font-semibold text-foreground bg-muted/60 hover:bg-muted pl-3.5 pr-8 py-1.5 rounded-full border border-border/80 transition-colors cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="Class of 2026">Class of 2026</option>
+                  <option value="Class of 2025">Class of 2025</option>
+                  <option value="All Batches">All Batches</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
+              </div>
             </div>
 
             {/* Sub-Tiles */}

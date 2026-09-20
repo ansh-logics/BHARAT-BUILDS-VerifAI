@@ -758,32 +758,45 @@ export default function TpoDashboardPage() {
                   </p>
                 ) : null}
               </div>
-              <div className="p-6 border-b border-border/60 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-lg font-semibold text-card-foreground">Live JD shortlist</h2>
-                  <select
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value as BranchFilter)}
-                    className="h-9 rounded-full bg-muted border-border hover:bg-muted/80 px-4 text-sm font-medium text-foreground"
-                  >
-                    <option value="All">All Branches</option>
-                    {branchOptions.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value as GenderFilter)}
-                    className="h-9 rounded-full bg-muted border-border hover:bg-muted/80 px-4 text-sm font-medium text-foreground"
-                  >
-                    <option value="All">All Genders</option>
-                    <option value="women">Women</option>
-                    <option value="men">Men</option>
-                    <option value="other">Other</option>
-                  </select>
-                  <Input value={minCgpa} onChange={(e) => setMinCgpa(e.target.value)} placeholder="Min CGPA" className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground w-32 placeholder:text-muted-foreground" />
+              <div className="p-6 border-b border-border/60 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-lg font-semibold text-card-foreground mr-1">Live JD shortlist</h2>
+                  <div className="relative inline-flex items-center">
+                    <select
+                      value={branch}
+                      onChange={(e) => setBranch(e.target.value as BranchFilter)}
+                      aria-label="Filter by branch"
+                      className="h-9 rounded-full bg-muted/50 border border-input hover:bg-muted pl-4 pr-9 text-sm font-medium text-foreground transition-colors cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    >
+                      <option value="All">All Branches</option>
+                      {branchOptions.map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                  </div>
+                  <div className="relative inline-flex items-center">
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value as GenderFilter)}
+                      aria-label="Filter by gender"
+                      className="h-9 rounded-full bg-muted/50 border border-input hover:bg-muted pl-4 pr-9 text-sm font-medium text-foreground transition-colors cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    >
+                      <option value="All">All Genders</option>
+                      <option value="women">Women</option>
+                      <option value="men">Men</option>
+                      <option value="other">Other</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                  </div>
+                  <Input
+                    value={minCgpa}
+                    onChange={(e) => setMinCgpa(e.target.value)}
+                    placeholder="Min CGPA"
+                    className="h-9 rounded-full bg-muted/50 border-input hover:bg-muted focus:bg-background px-4 text-sm font-medium text-foreground w-28 placeholder:text-muted-foreground transition-colors"
+                  />
                   {skills.length > 0 && (
                     <div className="flex items-center gap-1.5 pl-2 border-l border-border/80">
                       {skills.map((s) => (
@@ -795,20 +808,20 @@ export default function TpoDashboardPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     size="sm"
                     onClick={openCreateGroupModal}
                     disabled={creatingGroup || (filtered.length === 0 && Object.keys(manualSelected).length === 0)}
-                    className="h-9 rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+                    className="h-9 rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90 font-medium cursor-pointer"
                   >
                     Create Group
                   </Button>
-                  <Button variant="outline" size="sm" onClick={exportToCsv} className="h-9 rounded-full px-4 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted font-medium gap-2">
+                  <Button variant="outline" size="sm" onClick={exportToCsv} className="h-9 rounded-full px-4 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted font-medium gap-2 cursor-pointer">
                     <Download className="size-4" />
                     Export CSV
                   </Button>
-                  <Button variant="outline" size="sm" onClick={resetFiltersAndSort} className="h-9 rounded-full px-4 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted font-medium">Reset Filters</Button>
+                  <Button variant="outline" size="sm" onClick={resetFiltersAndSort} className="h-9 rounded-full px-4 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted font-medium cursor-pointer">Reset Filters</Button>
                 </div>
               </div>
 
@@ -889,7 +902,7 @@ export default function TpoDashboardPage() {
                             {expandedKey === c.key && (
                               <TableRow className="bg-muted/20 hover:bg-muted/20">
                                 <TableCell colSpan={7} className="p-0 border-b-0">
-                                  <div className="px-10 py-6 grid grid-cols-3 gap-8">
+                                  <div className="px-6 md:px-10 py-6 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                                     <div className="space-y-4">
                                       <h4 className="text-sm font-semibold text-card-foreground">Score Breakdown</h4>
                                       {([

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -465,23 +465,26 @@ export default function PlacementGroupDetailPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid gap-3 md:grid-cols-2">
-              <select
-                value={mailType}
-                onChange={(e) => setMailType(e.target.value as TpoMailType)}
-                className="h-9 w-full rounded-full bg-muted border border-border px-4 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="shortlist_notice">Shortlist notice</option>
-                <option value="prep_topics">Preparation topics</option>
-                <option value="interview_schedule">Interview schedule</option>
-                <option value="round_invite">Round invite</option>
-                <option value="round_result">Round result (qualified/rejected)</option>
-                <option value="process_custom">Custom process mail</option>
-              </select>
+              <div className="relative inline-flex items-center w-full">
+                <select
+                  value={mailType}
+                  onChange={(e) => setMailType(e.target.value as TpoMailType)}
+                  className="h-9 w-full rounded-full bg-muted/50 border border-input hover:bg-muted pl-4 pr-9 text-sm font-medium text-foreground transition-colors cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="shortlist_notice">Shortlist notice</option>
+                  <option value="prep_topics">Preparation topics</option>
+                  <option value="interview_schedule">Interview schedule</option>
+                  <option value="round_invite">Round invite</option>
+                  <option value="round_result">Round result (qualified/rejected)</option>
+                  <option value="process_custom">Custom process mail</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+              </div>
               <Input
                 placeholder="Additional note (optional)"
                 value={additionalNote}
                 onChange={(e) => setAdditionalNote(e.target.value)}
-                className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground"
+                className="h-9 rounded-full bg-muted/50 border-input hover:bg-muted focus:bg-background px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground transition-colors"
               />
             </div>
             {mailType === "prep_topics" ? (
@@ -666,23 +669,26 @@ export default function PlacementGroupDetailPage() {
             </div>
             <div className="space-y-3">
               <div className="grid gap-3 md:grid-cols-2">
-                <select
-                  value={individualMailType}
-                  onChange={(e) => setIndividualMailType(e.target.value as TpoMailType)}
-                  className="h-9 w-full rounded-full bg-muted border border-border px-4 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                  <option value="shortlist_notice">Shortlist notice</option>
-                  <option value="prep_topics">Preparation topics</option>
-                  <option value="interview_schedule">Interview schedule</option>
-                  <option value="round_invite">Round invite</option>
-                  <option value="round_result">Round result (qualified/rejected)</option>
-                  <option value="process_custom">Custom process mail</option>
-                </select>
+                <div className="relative inline-flex items-center w-full">
+                  <select
+                    value={individualMailType}
+                    onChange={(e) => setIndividualMailType(e.target.value as TpoMailType)}
+                    className="h-9 w-full rounded-full bg-muted/50 border border-input hover:bg-muted pl-4 pr-9 text-sm font-medium text-foreground transition-colors cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="shortlist_notice">Shortlist notice</option>
+                    <option value="prep_topics">Preparation topics</option>
+                    <option value="interview_schedule">Interview schedule</option>
+                    <option value="round_invite">Round invite</option>
+                    <option value="round_result">Round result (qualified/rejected)</option>
+                    <option value="process_custom">Custom process mail</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                </div>
                 <Input
                   placeholder="Additional note (optional)"
                   value={individualAdditionalNote}
                   onChange={(e) => setIndividualAdditionalNote(e.target.value)}
-                  className="h-9 rounded-full bg-background border-input px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground"
+                  className="h-9 rounded-full bg-muted/50 border-input hover:bg-muted focus:bg-background px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground transition-colors"
                 />
               </div>
               {individualMailType === "prep_topics" ? (

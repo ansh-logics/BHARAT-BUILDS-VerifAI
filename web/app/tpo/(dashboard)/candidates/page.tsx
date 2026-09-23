@@ -1011,7 +1011,7 @@ export default function TpoDashboardPage() {
                   className={cn(
                     "w-full max-w-3xl z-50 px-4 pointer-events-none",
                     hasAnalysis
-                      ? "fixed bottom-6 left-1/2 -translate-x-1/2"
+                      ? "fixed bottom-6 left-1/2 md:left-[calc(50%+8rem)] -translate-x-1/2"
                       : "relative mx-auto flex min-h-[min(48vh,420px)] items-center",
                   )}
                 >

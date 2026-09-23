@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, BrainCircuit, Loader2 } from "lucide-react";
+import { ArrowLeft, BrainCircuit, KeyRound, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { getApiErrorMessage, tpoLogin } from "@/lib/api";
@@ -19,11 +19,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { PaletteSwitcher } from "@/components/theme/palette-switcher";
 
+const DEMO_TPO_CREDENTIALS = {
+  username: "tpo",
+  password: "Tpo@1234",
+};
+
 export default function TpoLoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const fillDemoCredentials = () => {
+    setUsername(DEMO_TPO_CREDENTIALS.username);
+    setPassword(DEMO_TPO_CREDENTIALS.password);
+    toast.success("Demo credentials filled. Sign in to continue.");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,6 +120,19 @@ export default function TpoLoginPage() {
                 "Sign in to TPO Console"
               )}
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 w-full rounded-xl border-primary/30 text-primary hover:bg-primary/5"
+              onClick={fillDemoCredentials}
+              disabled={loading}
+            >
+              <KeyRound className="mr-2 h-4 w-4" />
+              Use demo credentials
+            </Button>
+            <p className="text-center text-xs leading-relaxed text-muted-foreground">
+              For the live VerifAI demonstration workspace.
+            </p>
             <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
               <Link href="/login" className="hover:text-foreground transition-colors">
                 ← Student Sign In

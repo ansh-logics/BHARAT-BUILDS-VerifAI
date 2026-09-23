@@ -212,8 +212,8 @@ export default function ProfilePage() {
       </div>
 
       {activeTab === "overview" ? (
-        <div className="grid gap-3 md:grid-cols-2">
-          <Card className={surfaceCardClass}>
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-12">
+          <Card className={`lg:col-span-5 ${surfaceCardClass}`}>
             <CardHeader className="pb-3 border-b border-border/60">
               <CardTitle className="text-base text-card-foreground">Academics</CardTitle>
             </CardHeader>
@@ -254,7 +254,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className={surfaceCardClass}>
+          <Card className={`lg:col-span-3 ${surfaceCardClass}`}>
             <CardHeader className="pb-3 border-b border-border/60">
               <CardTitle className="text-base text-card-foreground">Overall score</CardTitle>
             </CardHeader>
@@ -266,7 +266,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className={`md:col-span-2 overflow-hidden ${surfaceCardClass}`}>
+          <Card className={`md:col-span-2 lg:order-4 lg:col-span-12 overflow-hidden ${surfaceCardClass}`}>
             <CardHeader className="border-b border-border/60 bg-muted/20 pb-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
@@ -320,11 +320,11 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className={surfaceCardClass}>
-            <CardHeader className="pb-3 border-b border-border/60">
+          <Card className={`lg:order-5 lg:col-span-4 ${surfaceCardClass}`}>
+            <CardHeader className="pb-2 border-b border-border/60">
               <CardTitle className="text-base text-card-foreground">Placement status</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm pt-4">
+            <CardContent className="space-y-2.5 text-sm pt-3">
               {profile.placement?.is_active ? (
                 <>
                   <div className="flex items-center justify-between">
@@ -351,14 +351,14 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className={`md:col-span-2 ${surfaceCardClass}`}>
+          <Card className={`md:col-span-2 lg:order-6 lg:col-span-8 ${surfaceCardClass}`}>
             <CardHeader className="pb-3 border-b border-border/60">
               <CardTitle className="text-base text-card-foreground">Skills</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-wrap gap-2 pt-4">
+            <CardContent className="flex flex-wrap gap-1.5 pt-3">
               {profile.skills.length ? (
                 profile.skills.map((s) => (
-                  <span key={s} className="bg-muted text-foreground text-xs px-3 py-1.5 rounded-md font-medium border border-border/60">
+                  <span key={s} className="bg-muted text-foreground text-xs px-2.5 py-1 rounded-md font-medium border border-border/60">
                     {s}
                   </span>
                 ))
@@ -368,11 +368,11 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className={`md:col-span-2 ${surfaceCardClass}`}>
-            <CardHeader className="pb-3 border-b border-border/60">
+          <Card className={`lg:order-3 lg:col-span-4 ${surfaceCardClass}`}>
+            <CardHeader className="pb-2 border-b border-border/60">
               <CardTitle className="text-base text-card-foreground">Coding</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm pt-4">
+            <CardContent className="space-y-2.5 text-sm pt-3">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Persona</span>
                 <span className="font-medium text-card-foreground">{profile.coding.persona || "—"}</span>

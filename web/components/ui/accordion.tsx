@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -138,7 +139,7 @@ function AccordionTrigger({
         )}
         aria-hidden
       >
-        ˅
+        <ChevronDown className="size-4" strokeWidth={2.25} />
       </span>
     </button>
   )
@@ -170,4 +171,3 @@ function AccordionContent({
 }
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
-

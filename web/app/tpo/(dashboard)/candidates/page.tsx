@@ -400,6 +400,8 @@ export default function TpoDashboardPage() {
       setSkills([]);
       setExpandedKey(null);
       setDismissedClarifications({});
+      // Keep results unobstructed after analysis; the prompt becomes a refine-search control.
+      setIsPromptMinimized(true);
     } catch (error) {
       if (axios.isAxiosError(error) && [401, 403].includes(error.response?.status ?? 0)) {
         clearTpoAuth();
@@ -628,6 +630,7 @@ export default function TpoDashboardPage() {
   }
 
   const showSearchDropdown = query.trim().length > 0 && (isSearchLoading || hasSearched || Boolean(searchError));
+  const hasAnalysis = parsedJD !== null || candidates.length > 0 || errorMessage !== null;
 
   useEffect(() => {
     if (isInputExpanded) jdTextareaRef.current?.focus();
@@ -660,7 +663,10 @@ export default function TpoDashboardPage() {
               <Card className="bg-card text-card-foreground rounded-3xl border border-border/80 shadow-xs"><CardHeader className="pb-2 pt-5 px-5 flex flex-row items-center justify-between"><CardTitle className="text-sm font-medium text-muted-foreground">Top Candidates</CardTitle><Trophy className="size-4 text-muted-foreground" /></CardHeader><CardContent className="px-5 pb-5"><div className="text-4xl font-semibold tracking-tight text-card-foreground">{topKeys.size}</div></CardContent></Card>
             </section>
 
-            <section className="bg-card text-card-foreground rounded-[2rem] border border-border/80 shadow-xs overflow-hidden flex flex-col">
+            <section className={cn(
+              "bg-card text-card-foreground rounded-[2rem] border border-border/80 shadow-xs overflow-hidden flex flex-col",
+              !hasAnalysis && "hidden",
+            )}>
               <div className="px-6 py-4 border-b border-border/60 bg-muted/40">
                 <div className="flex items-center gap-2">
                   <Button variant="outline" onClick={() => router.push("/tpo/placement-groups")} className="rounded-full border-border/80 bg-card font-medium">
@@ -997,13 +1003,17 @@ export default function TpoDashboardPage() {
                   animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
                   exit={{
                     opacity: 0,
-                    scale: 0.2,
-                    x: 340,
-                    y: 40,
-                    transition: { duration: 0.32, ease: [0.36, 0.66, 0.04, 1] },
+                    scale: 0.58,
+                    y: 64,
+                    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] },
                   }}
-                  transition={{ type: "spring", stiffness: 320, damping: 30 }}
-                  className="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-3xl z-50 px-4 pointer-events-none"
+                  transition={{ type: "spring", stiffness: 300, damping: 32, mass: 0.9 }}
+                  className={cn(
+                    "w-full max-w-3xl z-50 px-4 pointer-events-none",
+                    hasAnalysis
+                      ? "fixed bottom-6 left-1/2 -translate-x-1/2"
+                      : "relative mx-auto flex min-h-[min(48vh,420px)] items-center",
+                  )}
                 >
                   <div className="pointer-events-auto flex flex-col items-center w-full">
                     {/* Floating Clickable Clarification Capsule */}
@@ -1261,7 +1271,7 @@ export default function TpoDashboardPage() {
                     transition: { duration: 0.24, ease: "easeInOut" },
                   }}
                   transition={{ type: "spring", stiffness: 420, damping: 26 }}
-                  className="absolute bottom-8 right-8 z-50 pointer-events-auto"
+                  className="fixed bottom-6 right-6 z-50 pointer-events-auto"
                 >
                   <motion.button
                     type="button"

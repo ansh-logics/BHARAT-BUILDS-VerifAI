@@ -3,6 +3,7 @@
     {
       "AllowedOrigins": [
         "https://web-six-pi-61.vercel.app",
+        "https://www.verifai.anshbhatt.space",
         "http://localhost:3000"
       ],
       "AllowedMethods": [

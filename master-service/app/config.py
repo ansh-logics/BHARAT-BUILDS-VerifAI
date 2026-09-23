@@ -39,7 +39,9 @@ class Settings(BaseSettings):
     cors_allowed_origins: str = (
         "http://localhost:3000,http://127.0.0.1:3000,"
         "http://localhost:18084,http://127.0.0.1:18084,"
-        "http://localhost:28084,http://127.0.0.1:28084"
+        "http://localhost:28084,http://127.0.0.1:28084,"
+        "https://web-six-pi-61.vercel.app,"
+        "https://www.verifai.anshbhatt.space"
     )
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587

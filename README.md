@@ -1,4 +1,7 @@
 # VerifAI
+
+![VerifAI - placement intelligence, verified.](web/public/og-image.png)
+
 > Automated Ground-Truth Placement Intelligence and Multi-Dimensional Candidate Verification Platform
 
 [![Production Frontend](https://img.shields.io/badge/Frontend-Vercel-black?style=flat&logo=vercel)](https://web-six-pi-61.vercel.app/)

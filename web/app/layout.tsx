@@ -14,9 +14,35 @@ const mono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.verifai.anshbhatt.space";
+const siteTitle = "VerifAI - Placement Intelligence for College TPOs";
+const siteDescription =
+  "Cross-verify student resumes, marksheets, GitHub, and coding evidence into explainable candidate shortlists.";
+const ogImage = {
+  url: "/og-image.png",
+  width: 1280,
+  height: 640,
+  alt: "VerifAI - placement intelligence, verified. AI-ranked candidate shortlists for college TPOs.",
+};
+
 export const metadata: Metadata = {
-  title: "VerifAI - Placement Intelligence for College TPOs",
-  description: "Cross-verify student resumes, marksheets, GitHub, and coding evidence into explainable candidate shortlists.",
+  metadataBase: new URL(siteUrl),
+  title: siteTitle,
+  description: siteDescription,
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "VerifAI",
+    title: siteTitle,
+    description: siteDescription,
+    images: [ogImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+    images: [ogImage.url],
+  },
 };
 
 const themeInitScript = `
